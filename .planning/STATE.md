@@ -15,8 +15,8 @@
   - Phase 5: Customer Addresses & Haversine Geospatial Discovery
   - Phase 6: Single-Vendor Cart & 4-Way Fair Checkout Engine
   - Phase 7: Local Orchestrator & Full-Stack Hardening
-- **Active Phase:** Phase 8 — OpenAPI Type Generation & Shared Client SDK (`drf-spectacular`).
-- **Next Transition:** Advance to Phase 9 (Cross-Platform Mobile Application with React Native / Expo SDK 52).
+  - Feature: Rider COD Virtual Float Limit, Double-Entry Cash Ledger & T+1 Vendor Settlements (`feat/rider-cod-cash-ledger`)
+- **Active Phase:** PR Review & Merge of `feat/rider-cod-cash-ledger` -> Transition to Phase 8 (OpenAPI Type Generation) & Phase 9 (Expo SDK 52 Cross-Platform Mobile App).
 
 ---
 
