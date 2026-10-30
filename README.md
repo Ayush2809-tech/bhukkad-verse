@@ -8,9 +8,21 @@
 ![Django 5](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django)
 ![Django REST Framework](https://img.shields.io/badge/DRF-3.15-red?style=for-the-badge)
 ![SQLite / PostgreSQL](https://img.shields.io/badge/Database-SQLite%20%2F%20PostgreSQL-4169E1?style=for-the-badge&logo=sqlite)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Production-Ready-emerald?style=for-the-badge)
 
-> 📖 **Comprehensive Technical Report & Architecture:** Check out the complete [PROJECT_REPORT.md](PROJECT_REPORT.md) for full ER diagrams, lifecycle state machines, API contracts, and financial split analyses.
+<p align="center">
+  <a href="https://github.com/Ayush2809-tech/bhukkad-verse/stargazers">
+    <img src="https://img.shields.io/github/stars/Ayush2809-tech/bhukkad-verse?style=social" alt="GitHub stars" />
+  </a>
+  <a href="https://github.com/Ayush2809-tech/bhukkad-verse/network/members">
+    <img src="https://img.shields.io/github/forks/Ayush2809-tech/bhukkad-verse?style=social" alt="GitHub forks" />
+  </a>
+</p>
+
+> ⭐ **Support the Project:** If you find this architecture inspiring or useful, please consider giving the repository a **Star**!  
+> 📖 **Comprehensive Technical Report & Architecture:** Check out the complete [PROJECT_REPORT.md](PROJECT_REPORT.md) for full ER diagrams, lifecycle state machines, API contracts, and financial split analyses.  
+> 🤝 **Contributing:** Read our [CONTRIBUTING.md](CONTRIBUTING.md) to propose enhancements, report bugs, or submit PRs.
 
 ---
 
