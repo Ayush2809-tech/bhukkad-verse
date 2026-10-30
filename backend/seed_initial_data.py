@@ -14,6 +14,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR / 'apps'))
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bhukkadverse.settings')
 
 import django

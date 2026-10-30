@@ -15,12 +15,12 @@ gantt
     Phase 2: Vendor Shops & Onboarding             :done, p2, 2026-08, 2026-09
     Phase 3: Multi-Tenant Catalog & Menu Engine    :done, p3, 2026-09, 2026-09
     Phase 4: Cinematic UI & Storefront Discovery   :done, p4, 2026-09, 2026-10
-    section Core Commerce
-    Phase 5: Customer Addresses & Haversine Distance:active, p5, 2026-10, 2026-11
-    Phase 6: Single-Vendor Cart & 4-Way Checkout    :p6, 2026-11, 2026-11
-    Phase 7: Payment Gateway (Razorpay/Stripe)     :p7, 2026-11, 2026-12
-    section Multi-Platform & Real-Time
-    Phase 8: OpenAPI Type Generation & SDKs        :p8, 2026-12, 2026-12
+    section Core Commerce & Full-Stack Hardening
+    Phase 5: Customer Addresses & Haversine Engine :done, p5, 2026-10, 2026-10
+    Phase 6: Single-Vendor Cart & 4-Way Checkout   :done, p6, 2026-10, 2026-10
+    Phase 7: Local Orchestrator & Production Audit :done, p7, 2026-10, 2026-10
+    section Multi-Platform Scaling
+    Phase 8: OpenAPI Type Generation & SDKs        :active, p8, 2026-11, 2026-12
     Phase 9: Cross-Platform Mobile App (Expo SDK 52):p9, 2026-12, 2027-01
     Phase 10: Real-Time Telemetry & Rider WebSockets:p10, 2027-01, 2027-02
 ```
@@ -56,57 +56,47 @@ gantt
 - Continuous dynamic dish marquee with round-robin vendor interleaving.
 - Public dynamic menu pages (`/shops/[slug]`) with category sub-navigation and live item customizer modals.
 
----
-
 ### Phase 5: Customer Addresses & Haversine Geospatial Discovery
-**Status:** `IN PROGRESS`  
-- **Objective:** Enable saved customer delivery addresses and server-authoritative serviceability filtering.
-- **Deliverables:**
-  - `CustomerAddress` model (`flat_house`, `street_area`, `landmark`, `city`, `pincode`, `latitude`, `longitude`, `is_default`, `address_type`).
-  - Provider-agnostic location picker: Google Maps JS API when configured; Leaflet/OpenStreetMap fallback; manual address entry fallback.
-  - Backend Haversine distance calculator filtering public shop listings against `shop.delivery_radius_km`.
-  - Frontend `LocationContext` storing confirmed customer delivery coordinates.
+**Status:** `COMPLETED`  
+- `CustomerAddress` model (`address_line1`, `address_line2`, `city`, `postal_code`, `latitude`, `longitude`, `label`, `is_default`).
+- Backend Haversine distance calculator filtering public shop listings against `shop.delivery_radius_km`.
+- Frontend `LocationContext` with device geolocation, Nominatim reverse geocoding, and saved address backend sync.
+- Provider-agnostic location picker: Google Maps JS API when configured; Leaflet/OpenStreetMap automatic fallback; manual address entry fallback.
 
 ### Phase 6: Single-Vendor Cart & 4-Way Fair Checkout Engine
-**Status:** `PLANNED`  
-- **Objective:** Build robust single-vendor cart constraints and server-validated checkout with transparent billing.
-- **Deliverables:**
-  - Single-vendor cart enforcement (prompts user to clear cart if adding from another kitchen).
-  - Server-authoritative checkout validation recalculating dish prices, size variants, and addons from the database.
-  - Transparent fee calculation: Subtotal + ₹5.00 Platform Fee + 5% GST; Free delivery if subtotal > ₹99 (₹25 standard fee if <= ₹99).
-  - 4-way financial ledger split: 90% vendor share, ₹30–₹35 rider share, 10% platform margin.
+**Status:** `COMPLETED`  
+- Single-vendor cart enforcement with automatic dialog prompting when items from different kitchens are selected.
+- Server-authoritative checkout validation recalculating dish prices, size variants, and addons from the database.
+- Transparent fee calculation: Subtotal + ₹5.00 Platform Fee + 5% GST; Free delivery if subtotal > ₹99 (₹25 standard fee if <= ₹99).
+- 4-way financial ledger split: 90% vendor share, ₹30–₹35 rider share, 10% platform margin.
+- Dynamic coupon voucher validation and discount deduction.
 
-### Phase 7: Payment Gateway Integration & Order State Machine
-**Status:** `PLANNED`  
-- **Objective:** Seamless online payment processing and idempotent order state progression.
-- **Deliverables:**
-  - Razorpay / Stripe payment gateway integration with order pre-creation and payment verification.
-  - Webhook listener with HMAC signature verification to prevent spoofing.
-  - Order state machine: `PENDING` -> `CONFIRMED` -> `PREPARING` -> `READY_FOR_PICKUP` -> `OUT_FOR_DELIVERY` -> `DELIVERED` / `CANCELLED`.
+### Phase 7: Local Orchestrator & Full-Stack Hardening
+**Status:** `COMPLETED`  
+- Fixed duplicate function declarations breaking Turbopack builds in `VendorDashboardPage`.
+- Dynamic `API_BASE_URL` binding across all frontend route pages (`cart`, `orders`, `admin`, `vendor/dashboard`, `sitemap`).
+- Windows-friendly UTF-8 stdout configuration for seeder scripts to prevent encoding crashes.
+- Created single-command orchestrators (`run_dev.ps1` and `run_dev.bat`) for unified dual-service launching, auto-migration, and auto-seeding.
+- Automated test suite verified: **96/96 tests passing**.
+
+---
 
 ### Phase 8: OpenAPI Type Generation & Shared Client SDK
-**Status:** `PLANNED`  
-- **Objective:** Modernize API contract and automate TypeScript types for cross-platform clients.
-- **Deliverables:**
-  - Install and configure `drf-spectacular` on Django DRF backend to expose `/api/schema/` and Swagger UI at `/api/docs/`.
-  - Configure `@hey-api/openapi-ts` to generate strict TypeScript interfaces directly into `frontend/src/types/api.ts`.
-  - Eliminate manual interface drift across web and future mobile clients.
+**Status:** `ACTIVE`  
+- Configure `drf-spectacular` on Django DRF backend to expose `/api/schema/` and Swagger UI at `/api/docs/`.
+- Configure `@hey-api/openapi-ts` to generate strict TypeScript interfaces directly into `frontend/src/types/api.ts`.
+- Eliminate manual interface drift across web and future mobile clients.
 
 ### Phase 9: Cross-Platform Mobile Application (React Native / Expo)
 **Status:** `PLANNED`  
-- **Objective:** Launch native iOS and Android mobile apps for Customers, Vendors, and Riders.
-- **Deliverables:**
-  - Scaffold `mobile/` using Expo SDK 52 with Expo Router (file-based routing matching Next.js App Router).
-  - Share core business logic, cart math, and Zod schemas between web and mobile via monorepo workspace.
-  - Customer App: Mobile reels feed, location-based kitchen discovery, native push notifications.
-  - Vendor App: Kitchen order chime audio notifications, quick item availability toggle.
-  - Rider App: Real-time background GPS streaming daemon.
+- Scaffold `mobile/` using Expo SDK 52 with Expo Router (file-based routing matching Next.js App Router).
+- Share core business logic, cart math, and Zod schemas between web and mobile via monorepo workspace.
+- Customer App: Mobile reels feed, location-based kitchen discovery, native push notifications.
+- Vendor App: Kitchen order chime audio notifications, quick item availability toggle.
+- Rider App: Real-time background GPS streaming daemon.
 
 ### Phase 10: Real-Time WebSockets & Live Rider Telemetry
 **Status:** `PLANNED`  
-- **Objective:** Live customer order tracking with moving courier icon on interactive maps.
-- **Deliverables:**
-  - Deploy Redis and Django Channels (ASGI) for real-time WebSocket communication (`ws/orders/<order_id>/tracking/`).
-  - Rider mobile background location broadcaster sending periodic coordinate packets.
-  - Live customer order tracking view showing dynamic ETA and rider position updates.
-
+- Deploy Redis and Django Channels (ASGI) for real-time WebSocket communication (`ws/orders/<order_id>/tracking/`).
+- Rider mobile background location broadcaster sending periodic coordinate packets.
+- Live customer order tracking view showing dynamic ETA and rider position updates.
