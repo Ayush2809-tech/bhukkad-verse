@@ -12,7 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from apps.authentication.permissions import IsPlatformAdmin
 from apps.shops.permissions import IsVendor
 from apps.shops.models import Shop
-from apps.products.models import Product
+from apps.products.models import Product, Category
 from apps.products.serializers import ProductVendorSerializer
 from .models import PlatformSettings, ShowcaseVideo, PlatformReview, Coupon
 from .serializers import (

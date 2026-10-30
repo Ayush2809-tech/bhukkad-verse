@@ -203,6 +203,22 @@ export default function VendorDashboardPage() {
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
+  // Notifications State
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const notifySuccess = (msg: string) => {
+    setActionSuccess(msg);
+    setActionError(null);
+    setTimeout(() => setActionSuccess(null), 4000);
+  };
+
+  const notifyError = (msg: string) => {
+    setActionError(msg);
+    setActionSuccess(null);
+    setTimeout(() => setActionError(null), 5000);
+  };
+
   // Showcase Videos State
   const [vendorVideos, setVendorVideos] = useState<any[]>([]);
   const [vendorVideosLoading, setVendorVideosLoading] = useState(false);
@@ -221,7 +237,7 @@ export default function VendorDashboardPage() {
     if (!token) return;
     setVendorOrdersLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/vendor/orders/", {
+      const res = await fetch(`${API_BASE_URL}/v1/vendor/orders/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -240,7 +256,7 @@ export default function VendorDashboardPage() {
     if (!token) return;
     setUpdatingOrderId(orderNumber);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/vendor/orders/${orderNumber}/status/`, {
+      const res = await fetch(`${API_BASE_URL}/v1/vendor/orders/${orderNumber}/status/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -526,8 +542,6 @@ export default function VendorDashboardPage() {
   // Shop Application State
   const [shop, setShop] = useState<VendorShopData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [togglingAccepting, setTogglingAccepting] = useState(false);
 
   // Operating Hours & Live Status State
@@ -640,18 +654,7 @@ export default function VendorDashboardPage() {
   const [resolvingComplaintId, setResolvingComplaintId] = useState<string | null>(null);
   const [resolutionText, setResolutionText] = useState<Record<string, string>>({});
 
-  // Clear notices after 4 seconds
-  const notifySuccess = (msg: string) => {
-    setActionSuccess(msg);
-    setActionError(null);
-    setTimeout(() => setActionSuccess(null), 4000);
-  };
 
-  const notifyError = (msg: string) => {
-    setActionError(msg);
-    setActionSuccess(null);
-    setTimeout(() => setActionError(null), 5000);
-  };
 
   // =============================================================
   // FETCH SHOP & CATALOG DATA

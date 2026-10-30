@@ -1,0 +1,35 @@
+# Configuration for actions/labeler v5
+
+"area: frontend":
+  - changed-files:
+      - any-glob-to-any-file: 'frontend/**'
+
+"area: backend":
+  - changed-files:
+      - any-glob-to-any-file: 'backend/**'
+
+"area: docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - 'LICENSE'
+
+"area: ci/cd":
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+
+"area: docker":
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docker-compose.yml'
+          - '**/Dockerfile'
+          - '**/.dockerignore'
+
+"dependencies":
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'frontend/package.json'
+          - 'frontend/package-lock.json'
+          - 'backend/requirements.txt'

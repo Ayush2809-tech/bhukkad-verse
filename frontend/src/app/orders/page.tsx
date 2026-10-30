@@ -1,5 +1,7 @@
 "use client";
 
+import { API_BASE_URL } from "@/lib/api";
+
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -74,7 +76,7 @@ function OrderTrackingContent() {
         // Try fetching customer's latest order from API if logged in
         if (token) {
           try {
-            const res = await fetch("http://127.0.0.1:8000/api/v1/orders/my-orders/", {
+            const res = await fetch(`${API_BASE_URL}/v1/orders/my-orders/`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.ok) {
@@ -96,7 +98,7 @@ function OrderTrackingContent() {
 
       setLoading(true);
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/v1/orders/track/${orderIdFromUrl}/`);
+        const res = await fetch(`${API_BASE_URL}/v1/orders/track/${orderIdFromUrl}/`);
         if (res.ok) {
           const data = await res.json();
           setOrder(data);

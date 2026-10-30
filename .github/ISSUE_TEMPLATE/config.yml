@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerabilities
+    url: https://github.com/Ayush2809-tech/bhukkad-verse/blob/main/SECURITY.md
+    about: Please report security vulnerabilities privately according to our security policy.
+  - name: General Questions & Support
+    url: https://github.com/Ayush2809-tech/bhukkad-verse/blob/main/SUPPORT.md
+    about: Read our support guide for help, FAQs, and discussions.
