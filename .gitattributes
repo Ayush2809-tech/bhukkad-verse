@@ -1,0 +1,40 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c       text
+*.h       text
+*.py      text diff=python
+*.js      text
+*.jsx     text
+*.ts      text
+*.tsx     text
+*.json    text
+*.html    text
+*.css     text
+*.scss    text
+*.md      text
+*.yml     text
+*.yaml    text
+*.sh      text eol=lf
+*.bat     text eol=crlf
+*.ps1     text eol=crlf
+
+# Denote all binary files
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.webp    binary
+*.svg     text
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+*.eot     binary
+*.pdf     binary
+*.zip     binary
+*.tar.gz  binary
+*.glb     binary
+*.gltf    text

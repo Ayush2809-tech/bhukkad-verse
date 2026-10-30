@@ -1,0 +1,61 @@
+name: Issue Auto-Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-label-issue:
+    name: Auto-label Issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze and apply labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = (issue.title || '').toLowerCase();
+            const body = (issue.body || '').toLowerCase();
+            const labelsToAdd = new Set();
+
+            // Match type from title
+            if (title.startsWith('fix:') || title.startsWith('bug:') || body.includes('### bug description')) {
+              labelsToAdd.add('type: bug');
+            } else if (title.startsWith('feat:') || title.startsWith('feature:') || body.includes('### proposed solution')) {
+              labelsToAdd.add('type: feature');
+            } else if (title.startsWith('docs:') || body.includes('### target documentation')) {
+              labelsToAdd.add('type: documentation');
+              labelsToAdd.add('area: docs');
+            } else if (title.startsWith('question:') || body.includes('### your question')) {
+              labelsToAdd.add('type: question');
+            }
+
+            // Match area from title or body
+            if (body.includes('frontend') || title.includes('frontend') || body.includes('storefront')) {
+              labelsToAdd.add('area: frontend');
+            }
+            if (body.includes('backend') || title.includes('backend') || body.includes('api') || body.includes('django')) {
+              labelsToAdd.add('area: backend');
+            }
+            if (body.includes('docker') || title.includes('docker')) {
+              labelsToAdd.add('area: docker');
+            }
+
+            // Always add triage-needed for fresh issues if not already present
+            if (context.payload.action === 'opened') {
+              labelsToAdd.add('triage-needed');
+            }
+
+            if (labelsToAdd.size > 0) {
+              const labels = Array.from(labelsToAdd);
+              console.log('Adding labels to issue #' + issue.number + ':', labels);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labels
+              });
+            }

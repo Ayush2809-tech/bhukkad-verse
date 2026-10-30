@@ -197,6 +197,18 @@ export default function AdminPortalPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  const notifySuccess = (msg: string) => {
+    setActionSuccess(msg);
+    setActionError(null);
+    setTimeout(() => setActionSuccess(null), 5000);
+  };
+
+  const notifyError = (msg: string) => {
+    setActionError(msg);
+    setActionSuccess(null);
+    setTimeout(() => setActionError(null), 6000);
+  };
+
   // Financials & Commission Ledger State
   const [financials, setFinancials] = useState<any>(null);
   const [financialsLoading, setFinancialsLoading] = useState(false);
@@ -205,7 +217,7 @@ export default function AdminPortalPage() {
     if (!token) return;
     setFinancialsLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/admin/financials/", {
+      const res = await fetch(`${API_BASE_URL}/v1/admin/financials/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -936,18 +948,7 @@ export default function AdminPortalPage() {
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [modalSubmitting, setModalSubmitting] = useState(false);
 
-  // Toast Helpers
-  const notifySuccess = (msg: string) => {
-    setActionSuccess(msg);
-    setActionError(null);
-    setTimeout(() => setActionSuccess(null), 5000);
-  };
-
-  const notifyError = (msg: string) => {
-    setActionError(msg);
-    setActionSuccess(null);
-    setTimeout(() => setActionError(null), 6000);
-  };
+  // Handlers
 
   // =============================================================
   // DATA FETCHING
