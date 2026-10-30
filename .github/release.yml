@@ -1,0 +1,45 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+      - ignore-for-release
+      - duplicate
+      - invalid
+    authors:
+      - dependabot[bot]
+  categories:
+    - title: "🚀 New Features & Enhancements"
+      labels:
+        - "feat"
+        - "feature"
+        - "enhancement"
+    - title: "🐛 Bug Fixes & Stability"
+      labels:
+        - "fix"
+        - "bug"
+        - "hotfix"
+    - title: "🛡️ Security & Multi-Tenancy"
+      labels:
+        - "security"
+        - "vulnerability"
+    - title: "⚡ Performance Improvements"
+      labels:
+        - "perf"
+        - "performance"
+    - title: "🔄 Refactoring & Architecture"
+      labels:
+        - "refactor"
+        - "architecture"
+    - title: "📚 Documentation & Planning"
+      labels:
+        - "docs"
+        - "documentation"
+    - title: "🛠️ DevOps, CI/CD & Tooling"
+      labels:
+        - "ci"
+        - "chore"
+        - "build"
+    - title: "🧪 Testing & Quality Gates"
+      labels:
+        - "test"
+        - "testing"

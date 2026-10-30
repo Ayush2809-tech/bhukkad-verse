@@ -1,356 +1,231 @@
 # 🍲 BHUKKAD VERSE — "YOUR CRAVINGS. YOUR UNIVERSE."
 
-> **A Next-Generation, Autonomous Hyperlocal Food Marketplace** bridging verified street food carts, artisanal neighborhood cloud kitchens, and luxury fine-dining dining rooms with transparent pricing, cinematic video reels, and complete vendor self-governance.
+> **An Egalitarian, Hyperlocal Food Marketplace** bridging verified street food carts, artisanal cloud kitchens, and luxury fine-dining dining rooms with zero bill shock, cinematic video reels, and 4-way fair economics.
 
-![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![Django 5](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django)
-![Django REST Framework](https://img.shields.io/badge/DRF-3.15-red?style=for-the-badge)
-![SQLite / PostgreSQL](https://img.shields.io/badge/Database-SQLite%20%2F%20PostgreSQL-4169E1?style=for-the-badge&logo=sqlite)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Django 5](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+[![Django REST Framework](https://img.shields.io/badge/DRF-3.15-red?style=for-the-badge)](https://www.django-rest-framework.org/)
+[![Database](https://img.shields.io/badge/Database-SQLite%20%2F%20PostgreSQL-4169E1?style=for-the-badge&logo=sqlite)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
-[![Frontend CI](https://img.shields.io/badge/CI-Frontend-blue?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/frontend-ci.yml)
-[![Backend CI](https://img.shields.io/badge/CI-Backend-darkgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/backend-ci.yml)
-[![Status](https://img.shields.io/badge/Production-Ready-emerald?style=for-the-badge)](docs/PRODUCTION_READINESS_AUDIT.md)
-
-<p align="center">
-  <a href="https://github.com/Ayush2809-tech/bhukkad-verse/stargazers">
-    <img src="https://img.shields.io/github/stars/Ayush2809-tech/bhukkad-verse?style=social" alt="GitHub stars" />
-  </a>
-  <a href="https://github.com/Ayush2809-tech/bhukkad-verse/network/members">
-    <img src="https://img.shields.io/github/forks/Ayush2809-tech/bhukkad-verse?style=social" alt="GitHub forks" />
-  </a>
-</p>
-
-> ⭐ **Support the Project:** If you find this architecture inspiring or useful, please consider giving the repository a **Star**!  
-> 📖 **Comprehensive Technical Documentation & Architecture:** Check out the [docs/](docs/README.md) directory, including the full [PROJECT_REPORT.md](docs/PROJECT_REPORT.md) for ER diagrams, lifecycle state machines, API contracts, and financial split analyses.  
-> 🤝 **Contributing:** Read our [CONTRIBUTING.md](CONTRIBUTING.md) to propose enhancements, report bugs, or submit PRs.
+[![Backend CI](https://img.shields.io/badge/Backend_CI-Passing-darkgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/backend-ci.yml)
+[![Frontend CI](https://img.shields.io/badge/Frontend_CI-Passing-blue?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/frontend-ci.yml)
 
 ---
 
-## 🌟 Overview & Elevator Pitch
+## 🌟 The Core Disruption & 4 Pillars
 
-Traditional food delivery aggregators burden restaurants with steep **25%–35% commissions** and surprise customers with inflated delivery fees, surge pricing, packaging markups, and hidden platform fees.
+Traditional aggregators charge kitchens **25%–35% commissions** and hit consumers with multi-layered fees. **Bhukkad Verse** eliminates both:
 
-**BHUKKAD VERSE** reimagines food delivery from first principles:
-1. **Zero Bill Shock & Honest Pricing:** **100% FREE Delivery** on all orders above ₹99 (saves ₹25), flat ₹5 convenience fee, and honest 5% food GST. For a ₹399 dish, the customer pays transparently ~₹420.
+1. **Zero Bill Shock & Transparent Pricing:**
+   - **100% Free Delivery** on all orders above ₹99 (saves ₹25+ per order).
+   - Flat **₹5.00** platform convenience fee.
+   - Transparent **5% food GST** with zero arbitrary surge pricing or hidden markups.
 2. **Fair 4-Way Real-World Economics:**
-   - **Customer:** Free delivery, zero surge, authentic chef-direct food.
-   - **Vendor:** Retains **90% net sales** (direct bank payouts).
-   - **Rider:** Guaranteed ₹30–₹35 delivery earnings.
-   - **Platform:** Sustainable ₹44.90 net margin per order pool.
+   - **Vendors:** Retain **90% net sales** via direct bank payouts.
+   - **Riders:** Guaranteed **₹30–₹35** earnings per completed delivery.
+   - **Customers:** Zero surge, authentic chef-direct food pricing.
+   - **Platform:** Sustainable **10%** commission pool.
 3. **Theatrical Cinematic User Experience:**
-   - Velvet entrance rolling shutter with looping high-def culinary ambiance.
-   - Live 10-second background kitchen story reels with Instagram-style countdown bars.
-   - Dynamic real-time continuous dish marquee with round-robin vendor interleaving.
+   - Hardware-accelerated velvet entrance rolling shutter curtain.
+   - 10-second looping kitchen video reels with countdown progress bars.
+   - Continuous dynamic dish marquee with round-robin cross-vendor interleaving.
 4. **Three Curated Culinary Tiers:**
    - 🍢 **Iconic Street Food & Legendary Carts** (Affordable, hygienic, nostalgic).
-   - 👑 **Luxury Fine Dining & Heritage Palaces** (Slow-dum biryanis, earthen handis, truffle recipes).
+   - 👑 **Luxury Fine Dining & Heritage Palaces** (Slow-dum biryanis, royal truffle recipes).
    - 🍳 **Fresh Neighborhood Cloud Kitchens** (Daily comfort meals, whole spices, sanitized).
-5. **Autonomous Portals:** Dedicated vendor dashboards with menu builders, operating schedules, ticket resolution, and video uploads from device or online links.
 
 ---
 
-## 🏗️ System Architecture
+## 🚀 Quick Start Guide: How to Run the Project
 
-```mermaid
-flowchart TD
-    subgraph ClientLayer ["Frontend (Next.js 14 App Router + Tailwind v4)"]
-        UI["Customer Storefront (/ /shops /cart)"]
-        VendorUI["Vendor Dashboard (/vendor/dashboard)"]
-        AdminUI["Super Admin CMS (/admin)"]
-        Cart["Cart & Checkout Engine"]
-        Loc["Geolocation & GPS Detector"]
-    end
-
-    subgraph APILayer ["Backend API (Django 5 + Django REST Framework)"]
-        AuthApp["apps.authentication (JWT + Custom User)"]
-        CoreApp["apps.core (Settings CMS, Videos, Reviews, Coupons)"]
-        ShopApp["apps.shops (Kitchens, Tiers, Operating Hours)"]
-        ProductApp["apps.products (Dishes, Variants, Addons, Search)"]
-        OrderApp["apps.orders (Cart, Checkout, Commission Split)"]
-        CustomerApp["apps.customers (Addresses, Support Tickets)"]
-    end
-
-    subgraph DataStorage ["Data & Media Storage"]
-        DB[(SQLite / PostgreSQL Database)]
-        MediaDir["Local Media Storage (/media/)"]
-        PublicDir["Frontend Static Assets (/public/brand/)"]
-    end
-
-    UI -->|HTTP / JSON / JWT| APILayer
-    VendorUI -->|Multipart Video & Menu Upload| APILayer
-    AdminUI -->|CMS Configuration & Ticket Escalation| APILayer
-
-    APILayer --> DB
-    APILayer --> MediaDir
-    UI -.-> PublicDir
-```
-
----
-
-## 🔄 User Role & Workflow Matrix
-
-```mermaid
-flowchart LR
-    subgraph Customer ["👤 Customer"]
-        C1["Land on Entrance Curtain"] --> C2["Explore Dynamic Dishes Marquee"]
-        C2 --> C3["Watch 10s Kitchen Video Reels"]
-        C3 --> C4["Filter by Tier (Street / Luxury / Fresh)"]
-        C4 --> C5["Honest Checkout (Free Delivery over ₹99)"]
-    end
-
-    subgraph Vendor ["👨‍🍳 Kitchen Partner"]
-        V1["Register Kitchen"] --> V2["Admin Verification"]
-        V2 --> V3["Upload Dishes & Variants"]
-        V3 --> V4["Upload Video Reels from Device / Link"]
-        V4 --> V5["Live Operating Hours & Resolve Tickets"]
-    end
-
-    subgraph Admin ["🛡️ Platform Administrator"]
-        A1["Review Vendor Applications"] --> A2["Manage Entrance Curtain & Hero CMS"]
-        A2 --> A3["Upload Platform Video Reels"]
-        A3 --> A4["Configure Coupons & Platform Settings"]
-        A4 --> A5["Audit Logs & Financial Commissions"]
-    end
-```
-
----
-
-## 💰 Honest Pricing & 4-Way Economic Model
-
-```mermaid
-flowchart TD
-    Order["₹399 Customer Order"] --> Breakdown
-
-    subgraph Breakdown ["Transparent Bill Breakdown"]
-        ItemPrice["Dish Price: ₹399.00"]
-        DelFee["Delivery Fee: ₹0.00 (🎉 Free Delivery over ₹99)"]
-        PlatFee["Convenience Fee: ₹5.00"]
-        GST["Govt GST (5% Food Services): ₹19.95"]
-        Total["Customer Total: ₹423.95 (or ₹373.95 with coupon)"]
-    end
-
-    Total --> Split
-
-    subgraph Split ["Fair 4-Way Payout Distribution"]
-        VendorPayout["👨‍🍳 Vendor (90% Net Sales): ₹359.10"]
-        RiderPayout["🛵 Rider Guaranteed Earning: ₹30.00 - ₹35.00"]
-        PlatformMargin["⚡ Bhukkad Verse Margin: ₹44.90"]
-    end
-```
-
----
-
-## 🚀 Quick Start Guide (Clone & Run Locally)
-
-Follow these steps to run the entire stack on your local machine:
-
-### 1. Prerequisites
-- **Node.js**: `v18.17+` or `v20+`
-- **Python**: `3.10+` or `3.11+`
+### Prerequisites
+- **Python:** `3.10+` or `3.11+`
+- **Node.js:** `20.x+` (LTS recommended)
 - **Git**
 
 ---
 
-### 2. Clone Repository
-```bash
-git clone https://github.com/your-username/bhukkad-verse.git
-cd bhukkad-verse
+### Method 1: Single-Command Full-Stack Runner (Fastest & Recommended)
+
+Launches the Django 5 REST Backend and Next.js 16 Frontend simultaneously, automatically initializes the virtualenv, runs migrations, seeds initial data, and opens your browser.
+
+#### Windows PowerShell:
+```powershell
+.\run_dev.ps1
 ```
+
+#### Windows Double-Click / CMD:
+```cmd
+run_dev.bat
+```
+*(Or simply double-click `run_dev.bat` from Windows File Explorer).*
+
+> Press `Ctrl + C` in the terminal to gracefully stop both servers.
 
 ---
 
-### 3. Backend Setup (Django REST Framework)
+### Method 2: Two-Terminal Manual Workflow
 
+If you prefer running services in separate dedicated terminal windows:
+
+#### Terminal 1: Backend Setup & API Server (Django 5 DRF)
 ```bash
-# Navigate to backend directory
+# 1. Navigate to backend directory
 cd backend
 
-# Create virtual environment
+# 2. Create Python virtual environment
 python -m venv venv
 
-# Activate virtual environment
-# Windows (PowerShell):
+# 3. Activate virtual environment
+# Windows PowerShell:
 .\venv\Scripts\Activate.ps1
-# Windows (CMD):
+# Windows CMD:
 .\venv\Scripts\activate.bat
-# Linux / macOS:
+# macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# 4. Install dependencies
 pip install -r requirements.txt
 
-# Run database migrations
+# 5. Run database migrations to create db.sqlite3
 python manage.py migrate
 
-# (Optional) Seed initial demo categories and dishes if starting with empty DB:
+# 6. Seed turnkey master data (Accounts, Kitchens, Dishes & Reels)
+python seed_initial_data.py
 python seed_phase4_menu.py
 
-# Start Django Development Server (Port 8000)
-python manage.py runserver 127.0.0.1:8000
+# 7. Start backend development server (Port 8000)
+python manage.py runserver 0.0.0.0:8000
 ```
-> The API will be available at: `http://127.0.0.1:8000/api/`
+> Backend API will be live at: `http://localhost:8000/api/`
 
 ---
 
-### 4. Frontend Setup (Next.js 14 + Tailwind v4)
-
-Open a new terminal window:
+#### Terminal 2: Frontend Setup & Web Client (Next.js 16 + React 19)
 ```bash
-# Navigate to frontend directory
+# 1. Navigate to frontend directory
 cd frontend
 
-# Install npm dependencies
+# 2. Install npm packages
 npm install
 
-# Start Next.js Development Server (Port 3000)
+# 3. Start Next.js development server with Turbopack (Port 3000)
 npm run dev
 ```
-> Open your browser at: `http://localhost:3000`
+> Frontend storefront will be live at: `http://localhost:3000`
 
 ---
 
-## 🔐 Pre-Seeded Demo Credentials
+### Method 3: Containerized Infrastructure (Docker Compose)
 
-The included pre-seeded database contains verified accounts for instant evaluation:
-
-| Role | Username / Login | Password | Capabilities & Access |
-| :--- | :--- | :--- | :--- |
-| **Platform Super Admin** | `admin@1234` | `admin123` | Full access to `/admin` CMS, Curtain, Hero, About Us, Financials, Audits. |
-| **Street Food Vendor** | `vendor_street` | `vendor123` | Dashboard access for *Chandu Halwai & Street Chaat* (Samosas, Chaat, Reels). |
-| **Luxury Dining Vendor** | `vendor_luxury` | `vendor123` | Dashboard access for *The Royal Saffron Luxury Palace* (Dum Biryani, Dal Makhani). |
-| **Cloud Kitchen Vendor** | `chef_vikram` | `vendor123` | Autonomous dashboard for neighborhood cloud kitchen. |
-
----
-
-## 📂 Project Directory Structure
-
-```text
-pp2/
-├── backend/                       # Django 5 REST Framework Monolith
-│   ├── apps/
-│   │   ├── authentication/        # Custom User, JWT Auth, Role RBAC
-│   │   ├── core/                  # CMS Settings, Video Reels, Reviews, Coupons
-│   │   ├── shops/                 # Kitchen profiles, 3 Tiers, Operating Hours
-│   │   ├── products/              # Dishes, Variants, Addons, Proximity Search
-│   │   ├── orders/                # Cart calculation, Orders, Commissions
-│   │   └── customers/             # Addresses, Support Tickets
-│   ├── bhukkadverse/              # Django Settings, ASGI/WSGI, Root URLs
-│   ├── media/                     # User-uploaded videos, logos, dishes
-│   ├── db.sqlite3                 # Pre-seeded database
-│   ├── manage.py
-│   └── requirements.txt
-│
-├── frontend/                      # Next.js 14 App Router + Tailwind v4
-│   ├── src/
-│   │   ├── app/                   # App Router Pages
-│   │   │   ├── page.tsx           # Homepage (Curtain, Hero, Marquee, Reels)
-│   │   │   ├── admin/page.tsx     # Super Admin CMS Dashboard
-│   │   │   ├── vendor/dashboard/  # Kitchen Self-Service Portal
-│   │   │   ├── shops/             # Discovery & Kitchen Storefronts
-│   │   │   ├── cart/              # Transparent Checkout & Bill Breakdown
-│   │   │   └── about/             # Dynamic About Us Story & Pillars
-│   │   ├── components/            # Reusable UI & Layout Components
-│   │   │   ├── home/              # EntranceShutter, HeroSection, VideoSlider, DishesMarquee
-│   │   │   ├── brand/             # Official 3D Crest, Badges & Logo Mark
-│   │   │   └── layout/            # Navbar with GPS Pill, Footer
-│   │   ├── context/               # AuthContext, CartContext, LocationContext
-│   │   └── lib/                   # API Client, Design Tokens, Utilities
-│   ├── public/
-│   │   └── brand/                 # High-res logos, mascot, local video loops
-│   ├── package.json
-│   └── tailwind.config.ts
-│
-├── .github/                       # GitHub Workflows (CI, Linting, Labeler), PR & Issue Templates
-├── docs/                          # Architecture blueprints, audit reports, and technical guides
-│   ├── README.md                  # Documentation index & guide
-│   ├── PROJECT_REPORT.md          # Detailed Comprehensive Technical Report
-│   ├── FOODHUB_ARCHITECTURE_PLAN.md # Multi-vendor architecture blueprint
-│   └── PRODUCTION_READINESS_AUDIT.md # Verification & Security Audit Checklist
-├── .editorconfig                  # Consistent code indentation and encoding
-├── .gitattributes                 # Cross-platform line endings and binary handling
-├── .gitignore                     # Git ignore rules
-├── CODE_OF_CONDUCT.md             # Contributor Covenant Code of Conduct
-├── CONTRIBUTING.md                # Local setup, Git branching, and PR guidelines
-├── LICENSE                        # MIT Open Source License
-├── README.md                      # Primary GitHub Presentation (This file)
-├── SECURITY.md                    # Responsible vulnerability disclosure policy
-└── SUPPORT.md                     # Community help, discussions, and support channels
+Spin up PostgreSQL 16 and Redis services:
+```bash
+docker compose up -d
+```
+To shut down containers:
+```bash
+docker compose down
 ```
 
 ---
 
-## 🎯 Key Feature Highlights
+## 🔐 Pre-Seeded Test Accounts
 
-### 1. Entrance Rolling Shutter Ambiance
-* Full-screen cinematic entrance curtain with looping HD video background.
-* Interactive swipe/wheel gesture: smooth progressive roll-up revealing the storefront.
-* Quick skip button: `Explore Kitchens ✕`.
+The seeder scripts (`seed_initial_data.py` & `seed_phase4_menu.py`) provide pre-configured roles for instant evaluation:
 
-### 2. Sizzling Kitchen Video Stories
-* 10-second automatic reel slider featuring authentic dish preparation.
-* Instagram-style animated countdown bars.
-* Direct action button linking the reel to the dish for one-tap cart addition.
-* Admin and Vendors can upload videos from device (`.mp4`, `.webm`) or provide online URLs.
-
-### 3. Continuous Dishes Marquee
-* Infinite running conveyor slider displaying real-time dishes from partner kitchens.
-* Fair round-robin interleaving algorithm ensuring equal visibility across all vendors.
-* Automatic background polling (every 25s) so newly added dishes appear live without reload.
-
-### 4. Dynamic Platform CMS
-* Complete front-end customization from `/admin`:
-  - Hero primary & highlight headlines, subtitles, and badges.
-  - 3D Mascot artwork upload from device or URL.
-  - About Us story, pillars, and developer spotlight.
-  - Curtain video, tagline, quote, and emergency notice banner.
+| Role | Email / Login | Password | Capabilities & Access |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `admin@bhukkadverse.local` | `admin123` | Full access to `/admin` CMS, curtain/hero settings, video approvals, vendor audits, dispute desk. |
+| **Vendor Partner** | `vendor@bhukkadverse.local` | `vendor123` | Dashboard access for *Live Tandoor & Grill* (menu builder, size variants, add-ons, reels upload). |
+| **Vendor Partner (Chandu)** | `vendor2@bhukkadverse.local` | `vendor123` | Dashboard access for *Chandu Halwai & Street Chaat* (street food, sweets). |
+| **Customer User** | `customer@bhukkadverse.local` | `customer123` | Customer discovery, saved delivery addresses, cart, checkout, order tracking. |
 
 ---
 
-## 🛠️ Technology Stack
+## 🌐 Platform Portals & Endpoints
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Frontend Framework** | Next.js 14 (App Router, Server & Client Components) |
-| **Language** | TypeScript 5.0 (Strict mode, zero `any` leaks) |
-| **Styling & Design** | Tailwind CSS v4, Lucide React Icons |
-| **Backend Framework** | Python 3.10+, Django 5.0, Django REST Framework |
-| **Authentication** | SimpleJWT (JSON Web Tokens), Cookie/Bearer support |
-| **Geospatial Calculation**| Haversine Spherical Distance Formula |
-| **Storage & Media** | Multipart Chunked Streaming, Local Media Engine |
-| **State Management** | React Context (Auth, Cart, Location) |
+| Portal | URL | Description |
+| :--- | :--- | :--- |
+| **Customer Storefront** | [http://localhost:3000](http://localhost:3000) | Full discovery, entrance curtain, video reels, dynamic cart & checkout. |
+| **Vendor Management Desk** | [http://localhost:3000/vendor/dashboard](http://localhost:3000/vendor/dashboard) | Menu editor, variant creator, operating hours, order manager, reel uploader. |
+| **Super Admin CMS** | [http://localhost:3000/admin](http://localhost:3000/admin) | Financial oversight, shop approvals, dispute resolution, video moderation. |
+| **Backend REST API** | [http://localhost:8000/api/](http://localhost:8000/api/) | Django REST Framework root API. |
+| **API Health Check** | [http://localhost:8000/api/health/](http://localhost:8000/api/health/) | Real-time database and service status. |
+| **Django Admin** | [http://localhost:8000/admin](http://localhost:8000/admin) | Django native database administration desk. |
 
 ---
 
+## 📁 Repository Organization
+
+```text
+Bhukkad-Verse/
+├── backend/                       # Python Django 5 & Django REST Framework service
+│   ├── apps/
+│   │   ├── authentication/        # Custom User (CUSTOMER, VENDOR, ADMIN, RIDER) + SimpleJWT
+│   │   ├── core/                  # Settings CMS, Video reels, Platform reviews, Coupons
+│   │   ├── shops/                 # Kitchen shops, 3 Tiers, Operating hours, Geolocation
+│   │   ├── products/              # Categories, Dishes, Size variants, Addon groups
+│   │   ├── orders/                # Cart calculation, 4-Way split checkout, Order state machine
+│   │   └── customers/             # Saved delivery addresses, Support tickets
+│   ├── bhukkadverse/              # Django settings, WSGI, ASGI, root URLs
+│   ├── seed_initial_data.py       # Master seed script
+│   ├── seed_phase4_menu.py        # Menu variant & addon group seed script
+│   └── requirements.txt           # Backend dependencies
+├── frontend/                      # Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4
+│   ├── src/
+│   │   ├── app/                   # App Router pages (/shops, /cart, /orders, /vendor, /admin)
+│   │   ├── components/            # Modular UI (home, brand, location, layout, auth, search)
+│   │   ├── context/               # AuthContext, CartContext, LocationContext
+│   │   ├── lib/                   # Typed API client (api.ts) & design tokens
+│   │   └── types/                 # TypeScript interfaces
+│   └── package.json               # Frontend dependencies & scripts
+├── docs/                          # Comprehensive architecture blueprints & audits
+│   ├── FOODHUB_ARCHITECTURE_PLAN.md
+│   ├── PRODUCTION_READINESS_AUDIT.md
+│   ├── PROJECT_REPORT.md
+│   └── README.md
+├── .planning/                     # GSD planning state, roadmap, and codebase intelligence
+├── .github/                       # CI/CD workflows, release automation & issue templates
+├── run_dev.ps1                    # Unified PowerShell development orchestrator
+├── run_dev.bat                    # Unified Windows batch launcher
+├── docker-compose.yml             # PostgreSQL 16 & Redis infrastructure
+├── AGENTS.md                      # Universal AI Agent Instruction Manual
+├── CLAUDE.md                      # Claude Code repository directives
+├── GEMINI.md                      # Gemini & Antigravity Agent configuration
+└── README.md                      # This file
+```
 
 ---
 
-## 🤝 Open Source & Contributing
+## 🧪 Verification & Automated Tests
 
-We love contributions from the community! Whether you want to fix a bug, polish UI components, add tests, or optimize backend queries, we welcome your help.
+### Backend Test Suite (96 Tests)
+```bash
+cd backend
+python manage.py test apps --verbosity=2
+```
 
-- **[Contributing Guide](CONTRIBUTING.md)**: Step-by-step local setup, development guidelines, and PR workflow.
-- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards and expectations.
-- **[Support & Discussions](SUPPORT.md)**: Where to get help, ask questions, or discuss architectural enhancements.
-- **[Security Policy](SECURITY.md)**: Responsible disclosure guidelines for security issues.
-
-### Quality Assurance & Automated CI
-Every Pull Request to `main` automatically runs:
-- **Frontend CI**: ESLint checks, TypeScript strict compilation, and Next.js production builds.
-- **Backend CI**: Python 3.11 & 3.12 syntax checks (flake8), Django system validation, and uncommitted migration checks.
-- **PR Title Linter**: Enforces [Conventional Commits](https://www.conventionalcommits.org/) standards.
-- **PR & Issue Auto-Labelers**: Accurately classifies changes (`area: frontend`, `area: backend`, `area: docs`, etc.) and calculates PR diff size.
-- **CodeQL Security Analysis**: Continuous vulnerability scanning.
+### Frontend Build & Lint Verification
+```bash
+cd frontend
+npm run lint
+npm run build
+```
 
 ---
 
-## 👨‍💻 Author & Credits
+## 🤝 Contributing & Community
 
-Designed, architected, and engineered with passion by **Ayush Saxena**.
+We welcome contributions from developers, designers, and foodies!
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Onboarding guide, branch conventions, and PR workflow.
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**: Community standards and conduct expectations.
+- **[SECURITY.md](SECURITY.md)**: Responsible disclosure guidelines.
+- **[AGENTS.md](AGENTS.md)**: AI agent personas and multi-tenant security directives.
 
-* **Brand Motto:** *"YOUR CRAVINGS. YOUR UNIVERSE."*
-* **Platform:** BHUKKAD VERSE
-* **License:** MIT License (Open for evaluation, cloning, and community forks)
+---
 
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.

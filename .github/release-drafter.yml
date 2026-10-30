@@ -1,0 +1,70 @@
+name-template: 'v$RESOLVED_VERSION — Bhukkad Verse'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 New Features & Culinary Experiences'
+    labels:
+      - 'feat'
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes & Stability'
+    labels:
+      - 'fix'
+      - 'bug'
+      - 'hotfix'
+  - title: '🛡️ Security & Tenant Isolation'
+    labels:
+      - 'security'
+  - title: '⚡ Performance Optimizations'
+    labels:
+      - 'perf'
+      - 'performance'
+  - title: '🔄 Architectural Refactoring'
+    labels:
+      - 'refactor'
+  - title: '📚 Documentation & Architecture Specs'
+    labels:
+      - 'docs'
+      - 'documentation'
+  - title: '🛠️ DevOps, CI/CD & Local Orchestration'
+    labels:
+      - 'ci'
+      - 'chore'
+      - 'build'
+  - title: '🧪 Automated Test Suites'
+    labels:
+      - 'test'
+      - 'testing'
+change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking-change'
+  minor:
+    labels:
+      - 'minor'
+      - 'enhancement'
+      - 'feat'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'chore'
+      - 'docs'
+  default: patch
+template: |
+  ## 🍲 What's Changed in this Release
+
+  $CHANGELOG
+
+  ---
+
+  ## 👥 Heartfelt Thanks to Our Contributors
+  We celebrate every contribution that helps make Bhukkad Verse fair, transparent, and cinematic!
+
+  $CONTRIBUTORS
+
+  ---
+  **Full Changelog**: https://github.com/Ayush2809-tech/bhukkad-verse/compare/$PREVIOUS_TAG...$RESOLVED_VERSION
