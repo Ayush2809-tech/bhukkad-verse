@@ -1,13 +1,8 @@
-name: Release Drafter & Contributor Notes
+name: Release Notes Automation
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
-  pull_request:
-    types: [opened, reopened, synchronize]
+  release:
+    types: [published, created]
   workflow_dispatch:
 
 permissions:
@@ -15,16 +10,14 @@ permissions:
   pull-requests: read
 
 jobs:
-  draft-or-publish-release:
-    name: Draft or Publish Release Notes
+  update-release-notes:
+    name: Generate Release Notes & Credit Contributors
     runs-on: ubuntu-latest
     steps:
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter.yml
-          # Automatically publish the release if triggered by a version tag (e.g. v1.0.0);
-          # otherwise, keep the draft release continuously updated as PRs merge to main.
-          publish: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
