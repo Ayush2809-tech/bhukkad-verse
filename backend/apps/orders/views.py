@@ -7,21 +7,34 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Sum, Count, Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Order, OrderItem, PaymentTransaction
+from .models import (
+    Order,
+    OrderItem,
+    PaymentTransaction,
+    RiderWallet,
+    RiderCashLedger,
+    VendorSettlementLedger,
+)
 from .serializers import (
     OrderSerializer,
     CreateCheckoutOrderSerializer,
     VerifyPaymentSerializer,
     UpdateOrderStatusSerializer,
+    RiderWalletSerializer,
+    RiderCashLedgerSerializer,
+    VendorSettlementLedgerSerializer,
+    RiderCashCollectInputSerializer,
+    RiderDepositCashInputSerializer,
 )
 from apps.shops.models import Shop
 from apps.core.models import Coupon
-from apps.shops.permissions import IsVendor, IsAdmin
+from apps.shops.permissions import IsVendor, IsAdmin, IsRider
 
 # Safe Razorpay Client initialization
 try:
@@ -167,6 +180,16 @@ class CreateCheckoutOrderView(APIView):
                     dietary_type=itm.get('dietary_type', 'VEG'),
                     variant_name=itm.get('variant_name', '')
                 )
+
+            # Record initial Vendor Settlement entitlement (decide 90% payout vs 10% commission)
+            VendorSettlementLedger.objects.create(
+                shop=shop,
+                order=order,
+                gross_food_amount=subtotal,
+                platform_commission_amount=admin_commission_amount,
+                net_vendor_payout=vendor_payout_amount,
+                status=VendorSettlementLedger.Status.PENDING
+            )
 
         return Response({
             "success": True,
@@ -327,6 +350,17 @@ class VendorOrdersView(APIView):
         order.status = new_status
         order.save(update_fields=['status', 'updated_at'])
 
+        # Auto-reconcile vendor settlement status based on fulfillment
+        if new_status == Order.Status.DELIVERED:
+            VendorSettlementLedger.objects.filter(
+                order=order,
+                status=VendorSettlementLedger.Status.PENDING
+            ).update(status=VendorSettlementLedger.Status.APPROVED)
+        elif new_status == Order.Status.CANCELLED:
+            VendorSettlementLedger.objects.filter(
+                order=order
+            ).update(status=VendorSettlementLedger.Status.DISPUTED)
+
         return Response({
             "success": True,
             "order_number": order.order_number,
@@ -367,5 +401,262 @@ class AdminFinancialOverviewView(APIView):
                 "vendor_payouts_disbursed": float(aggregates['total_vendor_payouts'] or 0),
             },
             "recent_orders": serializer.data
+        })
+
+
+class RiderWalletView(APIView):
+    """
+    GET /api/v1/orders/rider/wallet/
+    Retrieves the authenticated rider's live cash float balance,
+    earning totals, limit status, and recent ledger entries.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        wallet, _ = RiderWallet.objects.get_or_create(
+            user=user,
+            defaults={
+                'rider_name': user.get_full_name() or user.username or "Fleet Delivery Partner",
+                'phone': getattr(user, 'phone', '') or "+91 98765 43210",
+                'vehicle_type': 'Electric Bike',
+            }
+        )
+        serializer = RiderWalletSerializer(wallet)
+        return Response({
+            "wallet": serializer.data,
+            "is_blocked_from_cod": wallet.is_blocked_from_cod,
+            "warning": (
+                f"CASH FLOAT LIMIT REACHED (₹{wallet.cash_in_hand} / ₹{wallet.cash_limit}). "
+                "You are temporarily blocked from accepting new COD orders. "
+                "Please deposit cash via UPI to restore COD assignment."
+            ) if wallet.is_blocked_from_cod else None
+        })
+
+
+class RiderCollectCashView(APIView):
+    """
+    POST /api/v1/orders/rider/collect-cash/
+    Rider collects physical cash from customer for a Cash-on-Delivery order.
+    Adds cash to rider's float, credits ₹35 guaranteed delivery wage,
+    and updates double-entry ledger.
+    Blocks rider from new COD orders if float exceeds ₹1,500.
+    """
+    permission_classes = [IsAuthenticated, IsRider]
+
+    def post(self, request):
+        serializer = RiderCashCollectInputSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        order_number = serializer.validated_data['order_number']
+        cash_collected = serializer.validated_data['cash_collected']
+
+        order = get_object_or_404(Order, order_number=order_number)
+
+        if order.payment_method != Order.PaymentMethod.COD:
+            return Response(
+                {"error": "This order was not placed via Cash-on-Delivery (COD)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if order.payment_status == Order.PaymentStatus.PAID:
+            return Response(
+                {"error": f"Payment for order #{order_number} has already been marked as collected."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        delivery_wage = Decimal('35.00')
+
+        with transaction.atomic():
+            wallet, _ = RiderWallet.objects.select_for_update().get_or_create(
+                user=request.user,
+                defaults={
+                    'rider_name': request.user.get_full_name() or request.user.username or "Fleet Partner",
+                    'phone': getattr(request.user, 'phone', '') or "+91 98765 43210"
+                }
+            )
+
+            # Update cash float and wage earnings
+            wallet.cash_in_hand += cash_collected
+            wallet.lifetime_delivery_earnings += delivery_wage
+            wallet.withdrawable_balance += delivery_wage
+            wallet.check_limit_and_update()
+            wallet.save()
+
+            # Record Ledger 1: Cash Collection
+            RiderCashLedger.objects.create(
+                wallet=wallet,
+                order=order,
+                entry_type=RiderCashLedger.EntryType.COD_COLLECTED,
+                amount=cash_collected,
+                cash_in_hand_after=wallet.cash_in_hand,
+                note=f"COD collected from customer for Order #{order.order_number}"
+            )
+
+            # Record Ledger 2: Delivery Wage Credit
+            RiderCashLedger.objects.create(
+                wallet=wallet,
+                order=order,
+                entry_type=RiderCashLedger.EntryType.DELIVERY_WAGE,
+                amount=delivery_wage,
+                cash_in_hand_after=wallet.cash_in_hand,
+                note=f"Guaranteed delivery wage for Order #{order.order_number}"
+            )
+
+            # Mark order as PAID & DELIVERED
+            order.payment_status = Order.PaymentStatus.PAID
+            order.status = Order.Status.DELIVERED
+            order.delivery_partner_name = wallet.rider_name
+            order.save(update_fields=['payment_status', 'status', 'delivery_partner_name', 'updated_at'])
+
+            # Transition vendor settlement status to APPROVED
+            VendorSettlementLedger.objects.filter(
+                order=order,
+                status=VendorSettlementLedger.Status.PENDING
+            ).update(status=VendorSettlementLedger.Status.APPROVED)
+
+        return Response({
+            "success": True,
+            "order_number": order.order_number,
+            "cash_collected": float(cash_collected),
+            "delivery_wage_credited": float(delivery_wage),
+            "new_cash_in_hand": float(wallet.cash_in_hand),
+            "cash_limit": float(wallet.cash_limit),
+            "is_blocked_from_cod": wallet.is_blocked_from_cod,
+            "withdrawable_balance": float(wallet.withdrawable_balance),
+            "message": (
+                f"Collected ₹{cash_collected}. ₹{delivery_wage} wage credited! "
+                + ("WARNING: Cash limit exceeded. You are blocked from accepting new COD orders until cash is deposited." if wallet.is_blocked_from_cod else "COD status active.")
+            )
+        }, status=status.HTTP_200_OK)
+
+
+class RiderDepositCashView(APIView):
+    """
+    POST /api/v1/orders/rider/deposit-cash/
+    Rider deposits accumulated COD cash to the platform via UPI/Bank transfer.
+    Deducts deposit from cash_in_hand and unblocks rider from COD orders if within limit.
+    """
+    permission_classes = [IsAuthenticated, IsRider]
+
+    def post(self, request):
+        serializer = RiderDepositCashInputSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        deposit_amount = serializer.validated_data['deposit_amount']
+        reference_utr = serializer.validated_data['reference_utr']
+        note = serializer.validated_data.get('note', '')
+
+        if deposit_amount <= Decimal('0.00'):
+            return Response({"error": "Deposit amount must be greater than ₹0.00."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            wallet, _ = RiderWallet.objects.select_for_update().get_or_create(
+                user=request.user,
+                defaults={
+                    'rider_name': request.user.get_full_name() or request.user.username or "Fleet Partner",
+                    'phone': getattr(request.user, 'phone', '') or "+91 98765 43210"
+                }
+            )
+
+            wallet.cash_in_hand = max(Decimal('0.00'), wallet.cash_in_hand - deposit_amount)
+            wallet.check_limit_and_update()
+            wallet.save()
+
+            RiderCashLedger.objects.create(
+                wallet=wallet,
+                entry_type=RiderCashLedger.EntryType.CASH_DEPOSIT,
+                amount=deposit_amount,
+                cash_in_hand_after=wallet.cash_in_hand,
+                reference_utr=reference_utr,
+                note=note or f"UPI Deposit verified (UTR: {reference_utr})"
+            )
+
+        return Response({
+            "success": True,
+            "deposited_amount": float(deposit_amount),
+            "reference_utr": reference_utr,
+            "remaining_cash_in_hand": float(wallet.cash_in_hand),
+            "is_blocked_from_cod": wallet.is_blocked_from_cod,
+            "message": "Deposit recorded successfully. COD assignment restored!" if not wallet.is_blocked_from_cod else "Deposit recorded. Cash float still above limit."
+        }, status=status.HTTP_200_OK)
+
+
+class AdminCodLedgerView(APIView):
+    """
+    GET /api/v1/orders/admin/cod-ledger/
+    Platform admin control room for Cash-on-Delivery audit,
+    rider cash floats, anti-theft blocking status, and T+1 vendor settlements.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        wallets = RiderWallet.objects.all().order_by('-cash_in_hand')
+        total_riders = wallets.count()
+
+        float_aggregates = wallets.aggregate(
+            total_cash_in_market=Sum('cash_in_hand'),
+            total_wages_earned=Sum('lifetime_delivery_earnings'),
+            total_withdrawable=Sum('withdrawable_balance'),
+        )
+
+        blocked_count = wallets.filter(is_blocked_from_cod=True).count()
+
+        # Vendor settlement aggregates
+        settlements = VendorSettlementLedger.objects.select_related('shop', 'order').order_by('-created_at')
+        settlement_stats = settlements.aggregate(
+            pending_total=Sum('net_vendor_payout', filter=Q(status=VendorSettlementLedger.Status.PENDING)),
+            approved_total=Sum('net_vendor_payout', filter=Q(status=VendorSettlementLedger.Status.APPROVED)),
+            settled_total=Sum('net_vendor_payout', filter=Q(status=VendorSettlementLedger.Status.SETTLED)),
+        )
+
+        recent_ledger_entries = RiderCashLedger.objects.select_related('wallet', 'order').order_by('-created_at')[:40]
+
+        return Response({
+            "summary": {
+                "total_riders": total_riders,
+                "total_cash_in_market": float(float_aggregates['total_cash_in_market'] or 0),
+                "blocked_riders_count": blocked_count,
+                "total_wages_earned": float(float_aggregates['total_wages_earned'] or 0),
+                "total_withdrawable_balance": float(float_aggregates['total_withdrawable'] or 0),
+                "pending_vendor_payouts": float(settlement_stats['pending_total'] or 0),
+                "approved_vendor_payouts": float(settlement_stats['approved_total'] or 0),
+                "settled_vendor_payouts": float(settlement_stats['settled_total'] or 0),
+            },
+            "riders": RiderWalletSerializer(wallets[:50], many=True).data,
+            "recent_ledger": RiderCashLedgerSerializer(recent_ledger_entries, many=True).data,
+            "settlements": VendorSettlementLedgerSerializer(settlements[:50], many=True).data
+        })
+
+
+class AdminSettleVendorView(APIView):
+    """
+    POST /api/v1/orders/admin/settle-vendor/<uuid:settlement_id>/
+    Platform admin settles pending or approved vendor payout with Bank UTR.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, settlement_id):
+        settlement = get_object_or_404(VendorSettlementLedger, id=settlement_id)
+        bank_utr = request.data.get('bank_utr', '').strip()
+        if not bank_utr:
+            return Response({"error": "Bank UTR reference number is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        settlement.status = VendorSettlementLedger.Status.SETTLED
+        settlement.bank_utr = bank_utr
+        settlement.settled_at = timezone.now()
+        settlement.save(update_fields=['status', 'bank_utr', 'settled_at', 'updated_at'])
+
+        return Response({
+            "success": True,
+            "settlement_id": str(settlement.id),
+            "shop_name": settlement.shop.name,
+            "order_number": settlement.order.order_number,
+            "net_vendor_payout": float(settlement.net_vendor_payout),
+            "bank_utr": settlement.bank_utr,
+            "status": settlement.status,
+            "message": f"Settlement of ₹{settlement.net_vendor_payout} disbursed to {settlement.shop.name}."
         })
 

@@ -14,5 +14,12 @@ urlpatterns = [
 
     # Admin Marketplace Financials
     path('admin/financials/', views.AdminFinancialOverviewView.as_view(), name='admin-financials'),
+    path('admin/cod-ledger/', views.AdminCodLedgerView.as_view(), name='admin-cod-ledger'),
+    path('admin/settle-vendor/<uuid:settlement_id>/', views.AdminSettleVendorView.as_view(), name='admin-settle-vendor'),
+
+    # Delivery Fleet & Cash-on-Delivery Ledger
+    path('rider/wallet/', views.RiderWalletView.as_view(), name='rider-wallet'),
+    path('rider/collect-cash/', views.RiderCollectCashView.as_view(), name='rider-collect-cash'),
+    path('rider/deposit-cash/', views.RiderDepositCashView.as_view(), name='rider-deposit-cash'),
 ]
 

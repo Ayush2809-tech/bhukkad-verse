@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Order, OrderItem, PaymentTransaction
+from .models import (
+    Order,
+    OrderItem,
+    PaymentTransaction,
+    RiderWallet,
+    RiderCashLedger,
+    VendorSettlementLedger,
+)
 from apps.shops.models import Shop
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -100,4 +107,81 @@ class VerifyPaymentSerializer(serializers.Serializer):
 
 class UpdateOrderStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Order.Status.choices)
+
+
+class RiderCashLedgerSerializer(serializers.ModelSerializer):
+    order_number = serializers.CharField(source='order.order_number', read_only=True)
+
+    class Meta:
+        model = RiderCashLedger
+        fields = [
+            'id',
+            'entry_type',
+            'amount',
+            'cash_in_hand_after',
+            'order_number',
+            'reference_utr',
+            'note',
+            'created_at',
+        ]
+
+
+class RiderWalletSerializer(serializers.ModelSerializer):
+    ledger_entries = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RiderWallet
+        fields = [
+            'id',
+            'rider_name',
+            'phone',
+            'vehicle_type',
+            'vehicle_number',
+            'cash_in_hand',
+            'cash_limit',
+            'lifetime_delivery_earnings',
+            'withdrawable_balance',
+            'is_active',
+            'is_blocked_from_cod',
+            'ledger_entries',
+            'created_at',
+            'updated_at',
+        ]
+
+    def get_ledger_entries(self, obj):
+        entries = obj.ledger_entries.all()[:20]
+        return RiderCashLedgerSerializer(entries, many=True).data
+
+
+class VendorSettlementLedgerSerializer(serializers.ModelSerializer):
+    shop_name = serializers.CharField(source='shop.name', read_only=True)
+    order_number = serializers.CharField(source='order.order_number', read_only=True)
+
+    class Meta:
+        model = VendorSettlementLedger
+        fields = [
+            'id',
+            'shop',
+            'shop_name',
+            'order_number',
+            'gross_food_amount',
+            'platform_commission_amount',
+            'net_vendor_payout',
+            'status',
+            'settled_at',
+            'bank_utr',
+            'created_at',
+        ]
+
+
+class RiderCashCollectInputSerializer(serializers.Serializer):
+    order_number = serializers.CharField()
+    cash_collected = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
+class RiderDepositCashInputSerializer(serializers.Serializer):
+    deposit_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    reference_utr = serializers.CharField(max_length=100)
+    note = serializers.CharField(required=False, allow_blank=True, default='')
+
 

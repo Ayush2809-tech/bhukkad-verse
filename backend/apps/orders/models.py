@@ -160,3 +160,135 @@ class PaymentTransaction(TimeStampedModel):
     def __str__(self):
         return f"Txn #{self.transaction_id} for Order #{self.order.order_number} (₹{self.amount})"
 
+
+class RiderWallet(TimeStampedModel):
+    """
+    Rider Cash Float & Delivery Earnings Wallet.
+    Tracks physical cash collected from COD orders vs allowable cash limit.
+    Enforces anti-theft cash locking when cash_in_hand >= cash_limit.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='rider_wallet'
+    )
+    rider_name = models.CharField(max_length=120)
+    phone = models.CharField(max_length=25)
+    vehicle_type = models.CharField(max_length=50, default='Electric Bike')
+    vehicle_number = models.CharField(max_length=50, blank=True, default='')
+
+    # COD Cash in hand vs platform limits
+    cash_in_hand = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Total physical cash held by rider from COD collections"
+    )
+    cash_limit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('1500.00'),
+        help_text="Maximum cash allowed before rider is blocked from taking more COD orders"
+    )
+    lifetime_delivery_earnings = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Cumulative delivery wages earned"
+    )
+    withdrawable_balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Net salary/payout available for bank transfer"
+    )
+    is_active = models.BooleanField(default=True)
+    is_blocked_from_cod = models.BooleanField(
+        default=False,
+        help_text="True if rider exceeded cash limit and must deposit cash to continue"
+    )
+
+    def check_limit_and_update(self):
+        """Update is_blocked_from_cod status based on current cash float."""
+        self.is_blocked_from_cod = self.cash_in_hand >= self.cash_limit
+        self.save(update_fields=['is_blocked_from_cod'])
+
+    def __str__(self):
+        return f"Rider {self.rider_name} - Cash: ₹{self.cash_in_hand} / Limit: ₹{self.cash_limit}"
+
+
+class RiderCashLedger(TimeStampedModel):
+    """
+    Immutable double-entry transaction record for every cash collection,
+    delivery wage credit, and deposit back to platform.
+    """
+    class EntryType(models.TextChoices):
+        COD_COLLECTED = 'COD_COLLECTED', 'Cash Collected from Customer (+Cash in Hand)'
+        DELIVERY_WAGE = 'DELIVERY_WAGE', 'Delivery Partner Wage (+Earnings)'
+        CASH_DEPOSIT = 'CASH_DEPOSIT', 'Cash Deposited to Platform via UPI (-Cash in Hand)'
+        SALARY_PAYOUT = 'SALARY_PAYOUT', 'Salary Payout Disbursed to Bank (-Balance)'
+        ADJUSTMENT = 'ADJUSTMENT', 'Audit Adjustment / Penalty'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    wallet = models.ForeignKey(
+        RiderWallet,
+        on_delete=models.CASCADE,
+        related_name='ledger_entries'
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rider_ledger_entries'
+    )
+    entry_type = models.CharField(max_length=30, choices=EntryType.choices)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    cash_in_hand_after = models.DecimalField(max_digits=10, decimal_places=2)
+    reference_utr = models.CharField(max_length=100, blank=True, default='')
+    note = models.CharField(max_length=255, blank=True, default='')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.entry_type}] ₹{self.amount} - {self.wallet.rider_name}"
+
+
+class VendorSettlementLedger(TimeStampedModel):
+    """
+    Tracks the 90% net sales entitlement for each partner kitchen.
+    Enforces automated T+1 reconciliation.
+    """
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending Delivery Confirmation'
+        APPROVED = 'APPROVED', 'Approved for T+1 Batch Payout'
+        SETTLED = 'SETTLED', 'Transferred to Vendor Bank Account'
+        DISPUTED = 'DISPUTED', 'On Hold (Customer Ticket Raised)'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    shop = models.ForeignKey(
+        'shops.Shop',
+        on_delete=models.CASCADE,
+        related_name='settlement_entries'
+    )
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='vendor_settlement'
+    )
+    gross_food_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    platform_commission_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    net_vendor_payout = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    settled_at = models.DateTimeField(null=True, blank=True)
+    bank_utr = models.CharField(max_length=100, blank=True, default='')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Settlement #{self.order.order_number} ({self.shop.name}) - ₹{self.net_vendor_payout} [{self.status}]"
+
+

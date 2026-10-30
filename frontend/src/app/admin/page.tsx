@@ -41,6 +41,9 @@ import {
   TrendingUp,
   Wallet,
   Edit3,
+  Truck,
+  Lock,
+  ShieldAlert,
 } from "lucide-react";
 
 // =============================================================
@@ -212,17 +215,30 @@ export default function AdminPortalPage() {
   // Financials & Commission Ledger State
   const [financials, setFinancials] = useState<any>(null);
   const [financialsLoading, setFinancialsLoading] = useState(false);
+  const [codLedger, setCodLedger] = useState<any>(null);
+  const [settleModal, setSettleModal] = useState<{ id: string; shopName: string; orderNumber: string; amount: number } | null>(null);
+  const [settleBankUtr, setSettleBankUtr] = useState("");
+  const [settleLoading, setSettleLoading] = useState(false);
 
   const fetchFinancials = useCallback(async () => {
     if (!token) return;
     setFinancialsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/v1/admin/financials/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const [resFin, resCod] = await Promise.all([
+        fetch(`${API_BASE_URL}/v1/admin/financials/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE_URL}/v1/admin/cod-ledger/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      if (resFin.ok) {
+        const data = await resFin.json();
         setFinancials(data);
+      }
+      if (resCod.ok) {
+        const codData = await resCod.json();
+        setCodLedger(codData);
       }
     } catch {
       // Ignored
@@ -230,6 +246,34 @@ export default function AdminPortalPage() {
       setFinancialsLoading(false);
     }
   }, [token]);
+
+  const handleSettleVendor = async (settlementId: string) => {
+    if (!token || !settleBankUtr.trim()) return;
+    setSettleLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/admin/settle-vendor/${settlementId}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bank_utr: settleBankUtr.trim() }),
+      });
+      if (res.ok) {
+        notifySuccess(`Successfully settled ₹${settleModal?.amount.toFixed(2)} to ${settleModal?.shopName} (UTR: ${settleBankUtr.trim()})!`);
+        setSettleModal(null);
+        setSettleBankUtr("");
+        fetchFinancials();
+      } else {
+        const err = await res.json();
+        notifyError(err.error || "Failed to disburse vendor settlement.");
+      }
+    } catch {
+      notifyError("Network error while recording settlement.");
+    } finally {
+      setSettleLoading(false);
+    }
+  };
 
 
   // Overview State
@@ -3976,8 +4020,413 @@ export default function AdminPortalPage() {
                 )}
               </div>
             </div>
+
+            {/* SECTION 2: CASH-ON-DELIVERY (COD) & FLEET CASH FLOAT CONTROL */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-xs space-y-6">
+              <div className="border-b border-zinc-200 pb-5">
+                <span className="text-[10px] font-black uppercase text-amber-600 tracking-wider block">
+                  Anti-Theft Protection &amp; Fleet Liquidity
+                </span>
+                <h3 className="text-xl font-black text-brand-charcoal mt-1">
+                  Cash-on-Delivery (COD) &amp; Rider Virtual Float Limit
+                </h3>
+                <p className="text-xs text-brand-muted mt-1">
+                  Enforces strict ₹1,500 physical cash retention limit per rider. Automatically freezes COD order assignment if cash float threshold is exceeded until bank deposit.
+                </p>
+              </div>
+
+              {/* 4 Fleet Float Metric Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+                  <div className="flex items-center justify-between text-amber-800">
+                    <span className="text-[11px] font-black uppercase tracking-wider">Cash Float in Market</span>
+                    <Banknote className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div className="text-2xl font-black text-amber-900">
+                    ₹{codLedger?.summary?.total_cash_in_market?.toFixed(2) || "0.00"}
+                  </div>
+                  <p className="text-[10px] text-amber-700 font-medium">Physical cash in riders' hands</p>
+                </div>
+
+                <div className={`p-5 rounded-2xl border space-y-2 ${
+                  (codLedger?.summary?.blocked_riders_count || 0) > 0
+                    ? "bg-rose-50 border-rose-300 text-rose-900"
+                    : "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider">Blocked From COD</span>
+                    <ShieldAlert className={`w-4 h-4 ${
+                      (codLedger?.summary?.blocked_riders_count || 0) > 0 ? "text-rose-600" : "text-emerald-600"
+                    }`} />
+                  </div>
+                  <div className="text-2xl font-black">
+                    {codLedger?.summary?.blocked_riders_count || 0} Riders
+                  </div>
+                  <p className="text-[10px] font-medium opacity-80">
+                    {(codLedger?.summary?.blocked_riders_count || 0) > 0 ? "Exceeded ₹1,500 float limit" : "All fleet cash floats secure"}
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-2">
+                  <div className="flex items-center justify-between text-indigo-800">
+                    <span className="text-[11px] font-black uppercase tracking-wider">Guaranteed Delivery Wages</span>
+                    <TrendingUp className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <div className="text-2xl font-black text-indigo-900">
+                    ₹{codLedger?.summary?.total_wages_earned?.toFixed(2) || "0.00"}
+                  </div>
+                  <p className="text-[10px] text-indigo-700 font-medium">₹35 guaranteed per delivery drop</p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                  <div className="flex items-center justify-between text-zinc-600">
+                    <span className="text-[11px] font-black uppercase tracking-wider">Active Fleet Fleet</span>
+                    <Truck className="w-4 h-4 text-zinc-500" />
+                  </div>
+                  <div className="text-2xl font-black text-brand-charcoal">
+                    {codLedger?.summary?.total_riders || 0} Riders
+                  </div>
+                  <p className="text-[10px] text-zinc-500 font-medium">Registered delivery partners</p>
+                </div>
+              </div>
+
+              {/* Rider Cash Floats Table */}
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-black uppercase tracking-wider text-brand-charcoal">
+                  Delivery Fleet Cash Float &amp; Lock Status
+                </h4>
+
+                {!codLedger?.riders || codLedger.riders.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-zinc-500 bg-zinc-50 rounded-2xl border border-zinc-200">
+                    No delivery fleet partners registered yet.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-2xl border border-zinc-200">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-black uppercase text-[10px]">
+                        <tr>
+                          <th className="py-3 px-4">Rider</th>
+                          <th className="py-3 px-4">Contact</th>
+                          <th className="py-3 px-4">Vehicle</th>
+                          <th className="py-3 px-4 text-right">Cash in Hand</th>
+                          <th className="py-3 px-4 text-center">Float / Limit (₹1,500)</th>
+                          <th className="py-3 px-4 text-right">Withdrawable Balance</th>
+                          <th className="py-3 px-4 text-center">COD Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200">
+                        {codLedger.riders.map((r: any) => {
+                          const cash = parseFloat(r.cash_in_hand || 0);
+                          const limit = parseFloat(r.cash_limit || 1500);
+                          const pct = Math.min(100, Math.round((cash / limit) * 100));
+                          return (
+                            <tr key={r.id} className="hover:bg-zinc-50/70 transition-colors">
+                              <td className="py-3 px-4 font-black text-brand-charcoal">
+                                {r.rider_name}
+                              </td>
+                              <td className="py-3 px-4 text-zinc-600 font-mono text-[11px]">
+                                {r.phone}
+                              </td>
+                              <td className="py-3 px-4 text-zinc-600 font-medium">
+                                {r.vehicle_type}
+                              </td>
+                              <td className="py-3 px-4 text-right font-black text-amber-700">
+                                ₹{cash.toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <div className="max-w-[120px] mx-auto space-y-1">
+                                  <div className="w-full bg-zinc-200 h-2 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full transition-all duration-300 ${
+                                        r.is_blocked_from_cod
+                                          ? "bg-rose-500"
+                                          : pct > 75
+                                          ? "bg-amber-500"
+                                          : "bg-emerald-500"
+                                      }`}
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-[10px] text-zinc-500 font-semibold block">
+                                    {pct}% (₹{limit})
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-right font-black text-emerald-700">
+                                ₹{parseFloat(r.withdrawable_balance || 0).toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                {r.is_blocked_from_cod ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800 border border-rose-300">
+                                    <Lock className="w-3 h-3" />
+                                    BLOCKED (Limit Exceeded)
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                                    <Check className="w-3 h-3" />
+                                    Active (Accepting COD)
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION 3: T+1 VENDOR SETTLEMENTS LEDGER */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-xs space-y-6">
+              <div className="border-b border-zinc-200 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-purple-600 tracking-wider block">
+                    Fair 90% Partner Payouts
+                  </span>
+                  <h3 className="text-xl font-black text-brand-charcoal mt-1">
+                    T+1 Vendor Settlement Ledger
+                  </h3>
+                  <p className="text-xs text-brand-muted mt-1">
+                    Direct automated reconciliation for partner kitchens. 90% food sales entitlement credited upon delivery confirmation.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 font-bold">
+                    Approved: ₹{codLedger?.summary?.approved_vendor_payouts?.toFixed(2) || "0.00"}
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-bold">
+                    Disbursed: ₹{codLedger?.summary?.settled_vendor_payouts?.toFixed(2) || "0.00"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Settlements Table */}
+              <div className="space-y-3">
+                {!codLedger?.settlements || codLedger.settlements.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-zinc-500 bg-zinc-50 rounded-2xl border border-zinc-200">
+                    No settlement records found. Entitlements generate automatically when customers order.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-2xl border border-zinc-200">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-black uppercase text-[10px]">
+                        <tr>
+                          <th className="py-3 px-4">Order #</th>
+                          <th className="py-3 px-4">Kitchen</th>
+                          <th className="py-3 px-4 text-right">Gross Dishes</th>
+                          <th className="py-3 px-4 text-right">Commission (10%)</th>
+                          <th className="py-3 px-4 text-right">Net Payout (90%)</th>
+                          <th className="py-3 px-4 text-center">Status</th>
+                          <th className="py-3 px-4">Bank UTR</th>
+                          <th className="py-3 px-4 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200">
+                        {codLedger.settlements.map((s: any) => (
+                          <tr key={s.id} className="hover:bg-zinc-50/70 transition-colors">
+                            <td className="py-3 px-4 font-mono font-black text-purple-900">
+                              {s.order_number}
+                            </td>
+                            <td className="py-3 px-4 font-bold text-brand-charcoal">
+                              {s.shop_name}
+                            </td>
+                            <td className="py-3 px-4 text-right font-medium text-zinc-700">
+                              ₹{parseFloat(s.gross_food_amount).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-4 text-right font-medium text-purple-700">
+                              ₹{parseFloat(s.platform_commission_amount).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-4 text-right font-black text-emerald-700">
+                              ₹{parseFloat(s.net_vendor_payout).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                                s.status === "SETTLED"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : s.status === "APPROVED"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}>
+                                {s.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[11px] text-zinc-600">
+                              {s.bank_utr || "—"}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {s.status === "APPROVED" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setSettleModal({
+                                    id: s.id,
+                                    shopName: s.shop_name,
+                                    orderNumber: s.order_number,
+                                    amount: parseFloat(s.net_vendor_payout)
+                                  })}
+                                  className="px-3 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold transition-colors shadow-xs"
+                                >
+                                  Disburse
+                                </button>
+                              ) : s.status === "SETTLED" ? (
+                                <span className="text-[11px] font-bold text-emerald-700 flex items-center justify-center gap-1">
+                                  <CheckCircle className="w-3 h-3 text-emerald-600" /> Disbursed
+                                </span>
+                              ) : (
+                                <span className="text-[11px] text-zinc-400 font-medium">Pending Drop</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION 4: DOUBLE-ENTRY AUDIT LEDGER */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-xs space-y-4">
+              <div>
+                <span className="text-[10px] font-black uppercase text-indigo-600 tracking-wider block">
+                  Immutable Transaction Stream
+                </span>
+                <h3 className="text-xl font-black text-brand-charcoal mt-1">
+                  Rider Double-Entry Cash &amp; Wage Ledger
+                </h3>
+                <p className="text-xs text-brand-muted mt-1">
+                  Chronological double-entry records of customer COD payments, guaranteed ₹35 wage credits, and rider UPI deposits.
+                </p>
+              </div>
+
+              {!codLedger?.recent_ledger || codLedger.recent_ledger.length === 0 ? (
+                <div className="py-8 text-center text-xs text-zinc-500 bg-zinc-50 rounded-2xl border border-zinc-200">
+                  No ledger transactions recorded yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-zinc-200">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-black uppercase text-[10px]">
+                      <tr>
+                        <th className="py-3 px-4">Timestamp</th>
+                        <th className="py-3 px-4">Entry Type</th>
+                        <th className="py-3 px-4">Order #</th>
+                        <th className="py-3 px-4 text-right">Amount</th>
+                        <th className="py-3 px-4 text-right">Float After</th>
+                        <th className="py-3 px-4">UTR / Note</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 font-mono text-[11px]">
+                      {codLedger.recent_ledger.map((entry: any) => (
+                        <tr key={entry.id} className="hover:bg-zinc-50/70 transition-colors">
+                          <td className="py-2.5 px-4 text-zinc-500">
+                            {new Date(entry.created_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}
+                          </td>
+                          <td className="py-2.5 px-4 font-sans font-bold">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                              entry.entry_type === "COD_COLLECTED"
+                                ? "bg-amber-100 text-amber-800"
+                                : entry.entry_type === "DELIVERY_WAGE"
+                                ? "bg-indigo-100 text-indigo-800"
+                                : entry.entry_type === "CASH_DEPOSIT"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-zinc-100 text-zinc-800"
+                            }`}>
+                              {entry.entry_type}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-4 text-purple-900 font-bold">
+                            {entry.order_number || "—"}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-black text-brand-charcoal">
+                            ₹{parseFloat(entry.amount).toFixed(2)}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-medium text-zinc-600">
+                            ₹{parseFloat(entry.cash_in_hand_after).toFixed(2)}
+                          </td>
+                          <td className="py-2.5 px-4 text-zinc-600 font-sans text-xs">
+                            {entry.reference_utr ? `UTR: ${entry.reference_utr} | ` : ""}{entry.note}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
+
+      {/* Settle Vendor Payout Modal */}
+      {settleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+              <div className="flex items-center gap-2 text-purple-700">
+                <Banknote className="w-5 h-5" />
+                <h3 className="text-base font-black text-brand-charcoal">Disburse Vendor Payout</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSettleModal(null);
+                  setSettleBankUtr("");
+                }}
+                className="text-zinc-400 hover:text-zinc-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <p className="text-zinc-600">
+                Record bank NEFT/IMPS payout transfer for <strong>{settleModal.shopName}</strong> (Order #{settleModal.orderNumber}).
+              </p>
+              <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200 text-purple-900 font-bold flex justify-between items-center">
+                <span>Net Payable Entitlement:</span>
+                <span className="text-base font-black text-emerald-700">₹{settleModal.amount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-brand-charcoal">
+                Bank UTR / Transaction Reference Number <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. HDFC-NEFT-20261030-8912"
+                value={settleBankUtr}
+                onChange={(e) => setSettleBankUtr(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 focus:outline-hidden focus:border-purple-600 font-mono"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setSettleModal(null);
+                  setSettleBankUtr("");
+                }}
+                disabled={settleLoading}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSettleVendor(settleModal.id)}
+                disabled={settleLoading || !settleBankUtr.trim()}
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {settleLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                <span>Confirm &amp; Disburse</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
   );
 }
