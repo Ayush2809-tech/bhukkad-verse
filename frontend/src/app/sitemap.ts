@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/api";
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -68,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Try dynamically fetching active shop slugs from backend
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/shops/", {
+    const res = await fetch(`${API_BASE_URL}/v1/shops/`, {
       next: { revalidate: 3600 },
     });
     if (res.ok) {

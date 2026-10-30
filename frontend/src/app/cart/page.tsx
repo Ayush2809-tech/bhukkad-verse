@@ -1,5 +1,7 @@
 "use client";
 
+import { API_BASE_URL } from "@/lib/api";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -121,7 +123,7 @@ export default function CartPage() {
 
     setIsValidatingCoupon(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/coupons/validate/", {
+      const res = await fetch(`${API_BASE_URL}/v1/coupons/validate/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, order_amount: subtotal }),
@@ -195,7 +197,7 @@ export default function CartPage() {
         cooking_instructions: cookingNotes.trim(),
       };
 
-      const res = await fetch("http://127.0.0.1:8000/api/v1/orders/checkout/", {
+      const res = await fetch(`${API_BASE_URL}/v1/orders/checkout/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(checkoutPayload),
@@ -239,7 +241,7 @@ export default function CartPage() {
           order_id: data.razorpay?.order_id,
           handler: async function (response: any) {
             try {
-              const verifyRes = await fetch("http://127.0.0.1:8000/api/v1/orders/verify-payment/", {
+              const verifyRes = await fetch(`${API_BASE_URL}/v1/orders/verify-payment/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -293,7 +295,7 @@ export default function CartPage() {
 
   const verifySandboxPayment = async (orderNumber: string) => {
     try {
-      await fetch("http://127.0.0.1:8000/api/v1/orders/verify-payment/", {
+      await fetch(`${API_BASE_URL}/v1/orders/verify-payment/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
