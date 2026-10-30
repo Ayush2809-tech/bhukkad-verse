@@ -1,0 +1,43 @@
+name: 📝 Documentation Update
+description: Suggest improvements or report errors in documentation
+title: "docs: "
+labels: ["type: documentation", "area: docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the Bhukkad Verse documentation!
+  - type: dropdown
+    id: doc_target
+    attributes:
+      label: Target Documentation
+      description: Which document needs an update?
+      options:
+        - README.md
+        - CONTRIBUTING.md
+        - docs/PROJECT_REPORT.md
+        - docs/FOODHUB_ARCHITECTURE_PLAN.md
+        - docs/PRODUCTION_READINESS_AUDIT.md
+        - Codebase inline docstrings / comments
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: issue_details
+    attributes:
+      label: What needs to be improved or corrected?
+      description: Describe the inaccuracy, missing information, or suggested addition.
+      placeholder: Describe the changes needed...
+    validations:
+      required: true
+  - type: textarea
+    id: suggested_content
+    attributes:
+      label: Suggested Content or Correction
+      description: Provide sample text or proposed markdown changes if you have any.
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be happy to submit a PR to update this documentation!

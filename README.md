@@ -8,8 +8,11 @@
 ![Django 5](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django)
 ![Django REST Framework](https://img.shields.io/badge/DRF-3.15-red?style=for-the-badge)
 ![SQLite / PostgreSQL](https://img.shields.io/badge/Database-SQLite%20%2F%20PostgreSQL-4169E1?style=for-the-badge&logo=sqlite)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
-![Status](https://img.shields.io/badge/Production-Ready-emerald?style=for-the-badge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
+[![Frontend CI](https://img.shields.io/badge/CI-Frontend-blue?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/frontend-ci.yml)
+[![Backend CI](https://img.shields.io/badge/CI-Backend-darkgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/backend-ci.yml)
+[![Status](https://img.shields.io/badge/Production-Ready-emerald?style=for-the-badge)](docs/PRODUCTION_READINESS_AUDIT.md)
 
 <p align="center">
   <a href="https://github.com/Ayush2809-tech/bhukkad-verse/stargazers">
@@ -21,7 +24,7 @@
 </p>
 
 > ⭐ **Support the Project:** If you find this architecture inspiring or useful, please consider giving the repository a **Star**!  
-> 📖 **Comprehensive Technical Report & Architecture:** Check out the complete [PROJECT_REPORT.md](PROJECT_REPORT.md) for full ER diagrams, lifecycle state machines, API contracts, and financial split analyses.  
+> 📖 **Comprehensive Technical Documentation & Architecture:** Check out the [docs/](docs/README.md) directory, including the full [PROJECT_REPORT.md](docs/PROJECT_REPORT.md) for ER diagrams, lifecycle state machines, API contracts, and financial split analyses.  
 > 🤝 **Contributing:** Read our [CONTRIBUTING.md](CONTRIBUTING.md) to propose enhancements, report bugs, or submit PRs.
 
 ---
@@ -260,10 +263,21 @@ pp2/
 │   ├── package.json
 │   └── tailwind.config.ts
 │
-├── .gitignore
+├── .github/                       # GitHub Workflows (CI, Linting, Labeler), PR & Issue Templates
+├── docs/                          # Architecture blueprints, audit reports, and technical guides
+│   ├── README.md                  # Documentation index & guide
+│   ├── PROJECT_REPORT.md          # Detailed Comprehensive Technical Report
+│   ├── FOODHUB_ARCHITECTURE_PLAN.md # Multi-vendor architecture blueprint
+│   └── PRODUCTION_READINESS_AUDIT.md # Verification & Security Audit Checklist
+├── .editorconfig                  # Consistent code indentation and encoding
+├── .gitattributes                 # Cross-platform line endings and binary handling
+├── .gitignore                     # Git ignore rules
+├── CODE_OF_CONDUCT.md             # Contributor Covenant Code of Conduct
+├── CONTRIBUTING.md                # Local setup, Git branching, and PR guidelines
+├── LICENSE                        # MIT Open Source License
 ├── README.md                      # Primary GitHub Presentation (This file)
-├── PROJECT_REPORT.md              # Detailed Comprehensive Technical Report
-└── PRODUCTION_READINESS_AUDIT.md  # Verification & Security Audit Checklist
+├── SECURITY.md                    # Responsible vulnerability disclosure policy
+└── SUPPORT.md                     # Community help, discussions, and support channels
 ```
 
 ---
@@ -307,6 +321,28 @@ pp2/
 | **Geospatial Calculation**| Haversine Spherical Distance Formula |
 | **Storage & Media** | Multipart Chunked Streaming, Local Media Engine |
 | **State Management** | React Context (Auth, Cart, Location) |
+
+---
+
+
+---
+
+## 🤝 Open Source & Contributing
+
+We love contributions from the community! Whether you want to fix a bug, polish UI components, add tests, or optimize backend queries, we welcome your help.
+
+- **[Contributing Guide](CONTRIBUTING.md)**: Step-by-step local setup, development guidelines, and PR workflow.
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards and expectations.
+- **[Support & Discussions](SUPPORT.md)**: Where to get help, ask questions, or discuss architectural enhancements.
+- **[Security Policy](SECURITY.md)**: Responsible disclosure guidelines for security issues.
+
+### Quality Assurance & Automated CI
+Every Pull Request to `main` automatically runs:
+- **Frontend CI**: ESLint checks, TypeScript strict compilation, and Next.js production builds.
+- **Backend CI**: Python 3.11 & 3.12 syntax checks (flake8), Django system validation, and uncommitted migration checks.
+- **PR Title Linter**: Enforces [Conventional Commits](https://www.conventionalcommits.org/) standards.
+- **PR & Issue Auto-Labelers**: Accurately classifies changes (`area: frontend`, `area: backend`, `area: docs`, etc.) and calculates PR diff size.
+- **CodeQL Security Analysis**: Continuous vulnerability scanning.
 
 ---
 
