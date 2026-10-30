@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favOrbit" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB703"/>
+      <stop offset="50%" stop-color="#FF5722"/>
+      <stop offset="100%" stop-color="#E63946"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Badge -->
+  <rect width="64" height="64" rx="16" fill="#1A1A1A"/>
+  
+  <!-- Orbit Ring -->
+  <path d="M 8 36 C 4 16 28 6 48 10 C 60 14 62 28 54 44 C 46 56 20 58 10 44" 
+        stroke="url(#favOrbit)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="50" cy="11" r="2.5" fill="#FFB703"/>
+
+  <!-- Puffy Chef Hat -->
+  <g transform="translate(6, 4)">
+    <path d="M 12 24 C 6 24 3 16 8 10 C 5 4 13 -1 22 1 C 28 -3 38 -3 42 3 C 48 1 54 7 51 13 C 56 18 51 24 45 24 Z" 
+          fill="#FFFFFF"/>
+    <!-- Red Hat Band -->
+    <rect x="15" y="21" width="28" height="6" rx="2" fill="#E63946"/>
+    <!-- Gold Crown -->
+    <polygon points="26,25 27.5,22 29,25 30.5,22 32,25" fill="#FFB703"/>
+
+    <!-- Mascot Face & Sunglasses -->
+    <ellipse cx="29" cy="38" rx="14" ry="11" fill="#FFDFBA"/>
+    <!-- Sunglasses -->
+    <rect x="17" y="33" width="10" height="7" rx="2.5" fill="#1A1A1A"/>
+    <rect x="31" y="33" width="10" height="7" rx="2.5" fill="#1A1A1A"/>
+    <rect x="27" y="34.5" width="4" height="2" fill="#1A1A1A"/>
+    <path d="M 19 34.5 L 21 38" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+    <path d="M 33 34.5 L 35 38" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+    <!-- Tongue / Smile -->
+    <path d="M 24 43 Q 29 48 34 43 Z" fill="#E63946"/>
+  </g>
+</svg>

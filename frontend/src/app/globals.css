@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #FDFBF7;
+  --foreground: #1A1A1A;
+  
+  /* BHUKKAD VERSE Brand Tokens */
+  --brand-cream: #FDFBF7;
+  --brand-surface: #F7F3EA;
+  --brand-card: #FFFFFF;
+  --brand-charcoal: #1A1A1A;
+  --brand-tomato: #E63946;
+  --brand-orange: #FF5722;
+  --brand-amber: #FFB703;
+  --brand-border: #E8E1D5;
+  --brand-muted: #6B7280;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-card: var(--brand-card);
+  --color-brand-charcoal: var(--brand-charcoal);
+  --color-brand-tomato: var(--brand-tomato);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-amber: var(--brand-amber);
+  --color-brand-border: var(--brand-border);
+  --color-brand-muted: var(--brand-muted);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F1E8;
+}
+::-webkit-scrollbar-thumb {
+  background: #D9D0C1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5722;
+}

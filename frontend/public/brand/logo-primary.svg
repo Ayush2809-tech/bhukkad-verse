@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="verseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFB703"/>
+      <stop offset="35%" stop-color="#FF7A00"/>
+      <stop offset="100%" stop-color="#E63946"/>
+    </linearGradient>
+    <linearGradient id="verseStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE8A3"/>
+      <stop offset="100%" stop-color="#A51522"/>
+    </linearGradient>
+    <linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E5E7EB"/>
+    </linearGradient>
+    <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFDE59"/>
+      <stop offset="100%" stop-color="#FF9100"/>
+    </linearGradient>
+    
+    <!-- 3D Shadow Filters -->
+    <filter id="bhukkadShadow" x="-10%" y="-10%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="0" flood-color="#141414"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="6" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+    <filter id="verseShadow" x="-10%" y="-10%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="0" flood-color="#550A0F"/>
+      <feDropShadow dx="0" dy="9" stdDeviation="4" flood-color="rgba(230,57,70,0.35)"/>
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <g transform="translate(10, 10)">
+    <!-- Chef Hat & Orbit Symbol on Left -->
+    <g transform="translate(0, 15)">
+      <!-- Swirling Food Orbit Ring -->
+      <path d="M 12 75 C 6 40 45 10 75 18 C 95 24 105 45 92 65 C 80 82 40 92 18 78" 
+            stroke="url(#verseGrad)" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.85"/>
+      <circle cx="82" cy="22" r="5" fill="#E63946"/>
+      <circle cx="15" cy="74" r="4" fill="#FFB703"/>
+
+      <!-- Chef Hat Badge -->
+      <g transform="translate(22, 18)">
+        <!-- Back Shadow of Hat -->
+        <path d="M 16 35 C 6 35 2 25 7 17 C 3 10 12 2 24 5 C 31 -2 46 -1 50 7 C 58 4 67 11 64 19 C 70 26 64 35 55 35 Z" fill="#1A1A1A"/>
+        <!-- Main White Puffy Hat -->
+        <path d="M 16 33 C 8 33 4 24 9 17 C 5 10 14 3 25 6 C 31 0 44 0 48 8 C 56 5 64 12 61 19 C 67 25 61 33 53 33 Z" fill="url(#hatGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <!-- Hat Band -->
+        <rect x="18" y="32" width="34" height="10" rx="3" fill="#1A1A1A"/>
+        <rect x="19" y="33" width="32" height="8" rx="2" fill="#E63946"/>
+        <!-- Crown Emblem on Hat -->
+        <polygon points="31,39 33,35 35,39 37,35 39,39" fill="url(#goldCrown)"/>
+
+        <!-- Sunglasses Mark below Hat -->
+        <path d="M 22 46 Q 35 48 48 46" stroke="#1A1A1A" stroke-width="2" fill="none"/>
+        <rect x="20" y="47" width="13" height="9" rx="3" fill="#1A1A1A"/>
+        <rect x="37" y="47" width="13" height="9" rx="3" fill="#1A1A1A"/>
+        <path d="M 33 49 L 37 49" stroke="#1A1A1A" stroke-width="2.5"/>
+        <path d="M 22 49 L 26 53" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+        <path d="M 39 49 L 43 53" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+
+        <!-- Happy Smile -->
+        <path d="M 28 60 Q 35 66 42 60" stroke="#E63946" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </g>
+    </g>
+
+    <!-- Main Typographic Branding -->
+    <g transform="translate(115, 0)">
+      <!-- BHUKKAD 3D Text -->
+      <g filter="url(#bhukkadShadow)">
+        <text x="0" y="65" 
+              font-family="system-ui, -apple-system, 'Montserrat', 'Arial Black', sans-serif" 
+              font-size="62" 
+              font-weight="900" 
+              letter-spacing="1.5" 
+              fill="#FFFFFF" 
+              stroke="#1A1A1A" 
+              stroke-width="5" 
+              stroke-linejoin="round"
+              paint-order="stroke fill">BHUKKAD</text>
+      </g>
+
+      <!-- VERSE 3D Banner Block -->
+      <g transform="translate(30, 72)" filter="url(#verseShadow)">
+        <!-- Dynamic Side Dashes -->
+        <rect x="-24" y="24" width="16" height="5" rx="2.5" fill="#FF5722"/>
+        <rect x="272" y="24" width="16" height="5" rx="2.5" fill="#FF5722"/>
+
+        <text x="0" y="38" 
+              font-family="system-ui, -apple-system, 'Montserrat', 'Arial Black', sans-serif" 
+              font-size="44" 
+              font-weight="900" 
+              letter-spacing="5" 
+              fill="url(#verseGrad)" 
+              stroke="#1A1A1A" 
+              stroke-width="4.5" 
+              stroke-linejoin="round"
+              paint-order="stroke fill">VERSE</text>
+      </g>
+
+      <!-- Tagline: YOUR CRAVINGS. YOUR UNIVERSE. -->
+      <text x="2" y="138" 
+            font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif" 
+            font-size="12" 
+            font-weight="800" 
+            letter-spacing="5.5" 
+            fill="#1A1A1A">YOUR CRAVINGS. YOUR UNIVERSE.</text>
+    </g>
+  </g>
+</svg>
