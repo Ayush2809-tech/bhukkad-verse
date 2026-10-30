@@ -44,6 +44,7 @@ export const HomepageVideoSlider: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [videoBufferStatus, setVideoBufferStatus] = useState<{ [key: string]: boolean }>({});
 
@@ -70,16 +71,16 @@ export const HomepageVideoSlider: React.FC = () => {
     fetchVideos();
   }, []);
 
-  // 10-Second Story Timer: Auto advance slides every 10 seconds (seamless infinite loop)
+  // 10-Second Story Timer: Auto advance slides every 10 seconds (pauses when user hovers or interacts)
   useEffect(() => {
-    if (videos.length <= 1 || !isPlaying) return;
+    if (videos.length <= 1 || !isPlaying || isHovered) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % videos.length);
     }, 10000); // Exact 10 seconds per reel
 
     return () => clearInterval(timer);
-  }, [videos.length, isPlaying, currentIndex]);
+  }, [videos.length, isPlaying, isHovered, currentIndex]);
 
   // Synchronize active video playback & programmatic autoplay
   useEffect(() => {
@@ -200,7 +201,11 @@ export const HomepageVideoSlider: React.FC = () => {
         </div>
 
         {/* Master Reel Showcase Container */}
-        <div className="relative w-full rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-zinc-950 aspect-video sm:aspect-21/9 max-h-[560px]">
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative w-full rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-zinc-950 aspect-video sm:aspect-21/9 max-h-[560px]"
+        >
           {/* Active Looping Video */}
           {videos.map((vid, idx) => {
             const videoSrc = getMediaUrl(vid.effective_video_url || vid.video_url);
@@ -233,22 +238,30 @@ export const HomepageVideoSlider: React.FC = () => {
           <div className="absolute inset-0 z-20 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
           <div className="absolute inset-0 z-20 bg-radial from-transparent via-black/20 to-black/70 pointer-events-none" />
 
-          {/* 10-Second Progress Bars (Story Style) */}
-          <div className="absolute top-0 left-0 right-0 z-30 flex items-center gap-1.5 p-4 pointer-events-none">
+          {/* 10-Second Progress Bars (Story Style - Clickable Segments) */}
+          <div className="absolute top-0 left-0 right-0 z-30 flex items-center gap-1.5 p-4">
             {videos.map((vid, idx) => (
-              <div key={vid.id} className="h-1 flex-1 rounded-full bg-white/25 overflow-hidden">
-                <div
-                  className={`h-full bg-gradient-to-r from-brand-amber via-brand-orange to-brand-tomato ${
-                    idx === currentIndex
-                      ? isPlaying
-                        ? "w-full transition-all duration-[10000ms] ease-linear"
-                        : "w-1/2"
-                      : idx < currentIndex
-                      ? "w-full"
-                      : "w-0"
-                  }`}
-                />
-              </div>
+              <button
+                key={vid.id}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                className="h-2.5 py-0.5 flex-1 cursor-pointer group pointer-events-auto"
+                aria-label={`Jump to video reel ${idx + 1}`}
+              >
+                <div className="h-1 w-full rounded-full bg-white/25 overflow-hidden group-hover:bg-white/45 transition-colors">
+                  <div
+                    className={`h-full bg-gradient-to-r from-brand-amber via-brand-orange to-brand-tomato ${
+                      idx === currentIndex
+                        ? isPlaying && !isHovered
+                          ? "w-full transition-all duration-[10000ms] ease-linear"
+                          : "w-full opacity-90"
+                        : idx < currentIndex
+                        ? "w-full"
+                        : "w-0"
+                    }`}
+                  />
+                </div>
+              </button>
             ))}
           </div>
 
@@ -257,7 +270,7 @@ export const HomepageVideoSlider: React.FC = () => {
             <button
               type="button"
               onClick={togglePlay}
-              className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white backdrop-blur-md cursor-pointer transition-all"
+              className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white backdrop-blur-md cursor-pointer transition-all hover:scale-105 active:scale-95"
               title={isPlaying ? "Pause Video" : "Play Video"}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -265,7 +278,7 @@ export const HomepageVideoSlider: React.FC = () => {
             <button
               type="button"
               onClick={toggleSound}
-              className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white backdrop-blur-md cursor-pointer transition-all"
+              className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white backdrop-blur-md cursor-pointer transition-all hover:scale-105 active:scale-95"
               title={isMuted ? "Unmute Sound" : "Mute Sound"}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-brand-amber" />}

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import React, { useRef } from "react";
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CravingItem {
   id: string;
@@ -99,6 +99,16 @@ export const CravingsShelfSection: React.FC<CravingsShelfSectionProps> = ({
   onSelectCraving,
   onResetCraving,
 }) => {
+  const shelfRef = useRef<HTMLDivElement>(null);
+
+  const handleShelfScroll = (direction: "left" | "right") => {
+    const container = shelfRef.current;
+    if (container) {
+      const scrollAmount = direction === "left" ? -280 : 280;
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="py-10 sm:py-14 bg-[#FDFBF7] border-b border-brand-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -117,19 +127,47 @@ export const CravingsShelfSection: React.FC<CravingsShelfSectionProps> = ({
             </p>
           </div>
 
-          {activeQuery && onResetCraving && (
-            <button
-              type="button"
-              onClick={onResetCraving}
-              className="text-xs font-black text-brand-tomato hover:underline self-start sm:self-auto cursor-pointer"
-            >
-              Clear filter ({activeQuery}) ✕
-            </button>
-          )}
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {activeQuery && onResetCraving && (
+              <button
+                type="button"
+                onClick={onResetCraving}
+                className="text-xs font-black text-brand-tomato hover:underline mr-2 cursor-pointer"
+              >
+                Clear filter ({activeQuery}) ✕
+              </button>
+            )}
+
+            {/* Mobile / Tablet Quick Navigation Arrows */}
+            <div className="flex items-center gap-1.5 lg:hidden">
+              <button
+                type="button"
+                onClick={() => handleShelfScroll("left")}
+                className="p-2 rounded-full bg-white border border-brand-border shadow-xs text-brand-charcoal hover:border-brand-orange transition-all cursor-pointer active:scale-95"
+                title="Scroll cravings left"
+                aria-label="Scroll cravings left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleShelfScroll("right")}
+                className="p-2 rounded-full bg-white border border-brand-border shadow-xs text-brand-charcoal hover:border-brand-orange transition-all cursor-pointer active:scale-95"
+                title="Scroll cravings right"
+                aria-label="Scroll cravings right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Visual Craving Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+        {/* Visual Craving Cards: Touch Carousel on Mobile (< lg), Clean 8-Column Grid on Desktop (>= lg) */}
+        <div
+          ref={shelfRef}
+          className="flex overflow-x-auto no-scrollbar gap-3 pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory lg:grid lg:grid-cols-8 lg:gap-3 lg:overflow-visible lg:pb-0"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {CRAVING_ITEMS.map((item) => {
             const isSelected = activeQuery.toLowerCase() === item.query.toLowerCase();
 
@@ -138,7 +176,7 @@ export const CravingsShelfSection: React.FC<CravingsShelfSectionProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectCraving(item.query)}
-                className={`group p-3 sm:p-4 rounded-3xl border transition-all text-left flex flex-col justify-between gap-2.5 cursor-pointer relative overflow-hidden bg-linear-to-b ${
+                className={`shrink-0 w-[140px] sm:w-[160px] lg:w-auto snap-start group p-3 sm:p-4 rounded-3xl border transition-all text-left flex flex-col justify-between gap-2.5 cursor-pointer relative overflow-hidden bg-linear-to-b ${
                   item.bgGradient
                 } ${
                   isSelected
