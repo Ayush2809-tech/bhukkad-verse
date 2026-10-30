@@ -58,6 +58,8 @@ frontend/.env.local
 # Scratch and Build artifacts
 scratch/
 backend/scratch/
+private_docs/
+*BLUEPRINT*
 *.tsbuildinfo
 frontend/tsconfig.tsbuildinfo
 
