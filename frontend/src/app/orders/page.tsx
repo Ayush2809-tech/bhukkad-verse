@@ -19,8 +19,11 @@ import {
   Receipt,
   AlertCircle,
   ArrowRight,
+  MessageSquare,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { OrderCommunicationModal } from "@/components/orders/OrderCommunicationModal";
 
 interface OrderTrackingData {
   order_number: string;
@@ -63,6 +66,7 @@ function OrderTrackingContent() {
   const [order, setOrder] = useState<OrderTrackingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lookupId, setLookupId] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     async function fetchOrder() {
@@ -234,11 +238,22 @@ function OrderTrackingContent() {
             </p>
           </div>
 
-          <div className="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-2xl flex items-center gap-2">
-            <Clock className="w-4 h-4 text-emerald-600 animate-pulse" />
-            <span className="text-xs font-black text-emerald-800">
-              Estimated Arrival: ~{order.estimated_delivery_minutes} Mins
-            </span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-brand-charcoal hover:bg-brand-orange text-white text-xs font-black transition-colors shadow-xs cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-brand-orange" />
+              <span>Chat with Kitchen / Rider</span>
+            </button>
+
+            <div className="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-2xl flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-600 animate-pulse" />
+              <span className="text-xs font-black text-emerald-800">
+                Estimated Arrival: ~{order.estimated_delivery_minutes} Mins
+              </span>
+            </div>
           </div>
         </div>
 
@@ -306,13 +321,24 @@ function OrderTrackingContent() {
               </div>
             </div>
 
-            <a
-              href={`tel:${order.delivery_partner_phone}`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-charcoal hover:bg-brand-orange text-white text-xs font-black transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Call Rider ({order.delivery_partner_phone})</span>
-            </a>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange hover:bg-brand-tomato text-white text-xs font-black transition-colors shadow-xs cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Order Chat</span>
+              </button>
+
+              <a
+                href={`tel:${order.delivery_partner_phone}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-charcoal hover:bg-brand-orange text-white text-xs font-black transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Call Rider ({order.delivery_partner_phone})</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -375,6 +401,18 @@ function OrderTrackingContent() {
             </div>
           </div>
         </div>
+
+        {/* Real-Time Order Communication Modal (Kitchen & Rider) */}
+        <OrderCommunicationModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          orderNumber={order.order_number}
+          shopName={order.shop_name}
+          shopPhone={order.shop_phone}
+          riderName={order.delivery_partner_name}
+          riderPhone={order.delivery_partner_phone}
+          orderStatus={order.status}
+        />
       </div>
     </div>
   );

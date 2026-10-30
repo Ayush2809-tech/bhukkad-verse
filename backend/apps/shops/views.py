@@ -64,11 +64,13 @@ class PublicShopListView(generics.ListAPIView):
         lat_param = self.request.query_params.get('lat')
         lng_param = self.request.query_params.get('lng')
         deliverable_only = self.request.query_params.get('deliverable_only', '').lower() in ('true', '1', 'yes')
+        max_distance_param = self.request.query_params.get('max_distance_km')
 
         if lat_param is not None and lng_param is not None:
             try:
                 cust_lat = float(lat_param)
                 cust_lng = float(lng_param)
+                max_dist = float(max_distance_param) if max_distance_param else None
 
                 annotated_shops = []
                 for shop in queryset:
@@ -82,6 +84,9 @@ class PublicShopListView(generics.ListAPIView):
                     shop.annotated_is_deliverable = distance <= float(shop.delivery_radius_km)
 
                     if deliverable_only and not shop.annotated_is_deliverable:
+                        continue
+
+                    if max_dist is not None and distance > max_dist:
                         continue
 
                     annotated_shops.append(shop)

@@ -22,11 +22,13 @@ import {
   UtensilsCrossed,
   X,
   Flame,
+  Compass,
 } from "lucide-react";
 
 type SearchMode = "dish" | "shop";
 type DietaryFilter = "ALL" | "VEG" | "NON_VEG";
 type TierFilter = "ALL" | "STREET_FOOD" | "LUXURY_DINING" | "FRESH_KITCHEN";
+type RadiusFilter = "ALL" | "1" | "2" | "5";
 
 function ShopsDiscoveryContent() {
   const searchParams = useSearchParams();
@@ -42,6 +44,7 @@ function ShopsDiscoveryContent() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [dietaryFilter, setDietaryFilter] = useState<DietaryFilter>("ALL");
   const [tierFilter, setTierFilter] = useState<TierFilter>(initialTier);
+  const [radiusFilter, setRadiusFilter] = useState<RadiusFilter>("ALL");
   const [deliverableOnly, setDeliverableOnly] = useState(false);
 
   const [dishes, setDishes] = useState<SearchDishItem[]>([]);
@@ -59,7 +62,13 @@ function ShopsDiscoveryContent() {
 
   // Primary data fetcher: fetches both dishes and shops concurrently
   const performSearch = useCallback(
-    async (queryText: string, onlyDeliverable: boolean, diet: DietaryFilter, tier: TierFilter) => {
+    async (
+      queryText: string,
+      onlyDeliverable: boolean,
+      diet: DietaryFilter,
+      tier: TierFilter,
+      radius: RadiusFilter = "ALL"
+    ) => {
       try {
         setLoading(true);
         setError(null);
@@ -81,6 +90,9 @@ function ShopsDiscoveryContent() {
           if (onlyDeliverable) {
             dishUrl.searchParams.set("deliverable_only", "true");
           }
+          if (radius !== "ALL") {
+            dishUrl.searchParams.set("max_distance_km", radius);
+          }
         }
 
         // 2. Prepare Shop Search URL
@@ -96,6 +108,9 @@ function ShopsDiscoveryContent() {
           shopUrl.searchParams.set("lng", lng);
           if (onlyDeliverable) {
             shopUrl.searchParams.set("deliverable_only", "true");
+          }
+          if (radius !== "ALL") {
+            shopUrl.searchParams.set("max_distance_km", radius);
           }
         }
 
@@ -133,8 +148,8 @@ function ShopsDiscoveryContent() {
   );
 
   useEffect(() => {
-    performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter);
-  }, [performSearch, searchQuery, deliverableOnly, dietaryFilter, tierFilter]);
+    performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter, radiusFilter);
+  }, [performSearch, searchQuery, deliverableOnly, dietaryFilter, tierFilter, radiusFilter]);
 
   const updateUrlParams = (newQuery: string, newMode: SearchMode) => {
     const params = new URLSearchParams();
@@ -146,7 +161,7 @@ function ShopsDiscoveryContent() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateUrlParams(searchQuery, searchMode);
-    performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter);
+    performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter, radiusFilter);
   };
 
   const handleModeSwitch = (mode: SearchMode) => {
@@ -376,6 +391,46 @@ function ShopsDiscoveryContent() {
         )}
       </div>
 
+      {/* Hyperlocal Proximity Radii Filter Bar (Active when GPS/Location is set) */}
+      {coordinates && (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white rounded-2xl border border-brand-border shadow-2xs">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <span className="text-[11px] font-black uppercase text-brand-muted tracking-wider shrink-0 flex items-center gap-1.5 mr-1">
+              <Compass className="w-4 h-4 text-brand-orange" />
+              <span>Hyperlocal Distance:</span>
+            </span>
+            {(
+              [
+                { id: "ALL", label: "🌐 All Radii" },
+                { id: "1", label: "🟢 Walking Distance (< 1 km)" },
+                { id: "2", label: "⚡ 15-Min Rapid (< 2 km)" },
+                { id: "5", label: "🛵 Neighborhood (< 5 km)" },
+              ] as { id: RadiusFilter; label: string }[]
+            ).map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setRadiusFilter(r.id)}
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all shrink-0 cursor-pointer ${
+                  radiusFilter === r.id
+                    ? "bg-brand-orange text-white shadow-xs"
+                    : "bg-brand-surface border border-brand-border text-brand-charcoal hover:border-brand-orange"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-[11px] text-brand-muted font-bold shrink-0 hidden lg:block">
+            {radiusFilter === "1" && "Showing authentic food carts & kitchens within 1,000 meters"}
+            {radiusFilter === "2" && "Showing rapid kitchens within 2,000 meters (15 mins ETA)"}
+            {radiusFilter === "5" && "Showing neighborhood favorites within 5 km"}
+            {radiusFilter === "ALL" && "Showing all kitchens within active operating radius"}
+          </div>
+        </div>
+      )}
+
       {/* Content States */}
       {loading ? (
         <div className="min-h-[40vh] flex flex-col items-center justify-center gap-3 bg-white/50 rounded-3xl border border-brand-border p-12">
@@ -397,7 +452,7 @@ function ShopsDiscoveryContent() {
           </p>
           <button
             type="button"
-            onClick={() => performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter)}
+            onClick={() => performSearch(searchQuery, deliverableOnly, dietaryFilter, tierFilter, radiusFilter)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-charcoal text-white text-xs font-bold hover:bg-brand-orange transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />

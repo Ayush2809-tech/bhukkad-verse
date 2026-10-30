@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { SearchDishItem } from "@/types/search";
 import { useCart } from "@/context/CartContext";
-import { Clock, MapPin, Store, ArrowRight, CheckCircle2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Clock, MapPin, Store, ArrowRight, CheckCircle2, Plus, Minus, ShoppingBag, MessageCircle, Sparkles } from "lucide-react";
+import { DeliveryInquiryModal } from "@/components/location/DeliveryInquiryModal";
 
 interface DishCardProps {
   dish: SearchDishItem;
@@ -13,6 +14,7 @@ interface DishCardProps {
 export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
   const isVeg = dish.dietary_type === "VEG" || dish.dietary_type === "VEGAN";
   const { items, addItem, updateQuantity } = useCart();
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(
     dish.variants?.find((v) => v.is_default) || dish.variants?.[0] || null
   );
@@ -23,6 +25,16 @@ export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
 
   const cartItem = items.find((i) => i.id === cartItemId);
   const activePrice = selectedVariant ? selectedVariant.price : dish.base_price;
+
+  // Format distance cleanly
+  const distanceFormatted =
+    dish.distance_km !== null && dish.distance_km !== undefined
+      ? dish.distance_km < 1.0
+        ? `📍 ${Math.round(dish.distance_km * 1000)}m • Walking`
+        : dish.distance_km <= 2.0
+        ? `⚡ ${dish.distance_km} km • 15 mins`
+        : `📍 ${dish.distance_km} km`
+      : null;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -144,9 +156,9 @@ export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
               <span className="truncate">{dish.shop_name}</span>
             </Link>
 
-            {dish.distance_km !== null && dish.distance_km !== undefined && (
+            {distanceFormatted && (
               <span className="text-[11px] font-black text-brand-charcoal shrink-0 bg-brand-surface px-2 py-0.5 rounded-md border border-brand-border">
-                📍 {dish.distance_km} km
+                {distanceFormatted}
               </span>
             )}
           </div>
@@ -157,17 +169,32 @@ export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
               <span className="truncate">{dish.shop_address || dish.shop_city}</span>
             </div>
 
-            {dish.is_deliverable !== null && dish.is_deliverable !== undefined && (
-              dish.is_deliverable ? (
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0 flex items-center gap-0.5">
-                  <CheckCircle2 className="w-2.5 h-2.5" /> Delivers
-                </span>
-              ) : (
-                <span className="text-[10px] font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full shrink-0">
-                  Outside Radius
-                </span>
-              )
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsInquiryOpen(true);
+                }}
+                className="text-[10px] font-black text-brand-orange hover:text-white bg-brand-orange/10 hover:bg-brand-orange px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5 cursor-pointer"
+                title="Poocho kya yahan delivery ho payegi"
+              >
+                <Sparkles className="w-2.5 h-2.5" /> Inquire
+              </button>
+
+              {dish.is_deliverable !== null && dish.is_deliverable !== undefined && (
+                dish.is_deliverable ? (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                    <CheckCircle2 className="w-2.5 h-2.5" /> Delivers
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full">
+                    Outside
+                  </span>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -221,6 +248,15 @@ export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
           </button>
         )}
       </div>
+
+      {/* Pre-Order Delivery Inquiry Modal */}
+      <DeliveryInquiryModal
+        isOpen={isInquiryOpen}
+        onClose={() => setIsInquiryOpen(false)}
+        shopName={dish.shop_name}
+        distanceKm={dish.distance_km}
+        dishName={dish.name}
+      />
     </div>
   );
 };
