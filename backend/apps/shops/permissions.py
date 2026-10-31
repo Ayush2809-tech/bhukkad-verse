@@ -20,3 +20,14 @@ class IsAdmin(BasePermission):
     """
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.is_admin_user)
+
+class IsRider(BasePermission):
+    """
+    Allows access to authenticated delivery fleet partners (role='RIDER') or administrators.
+    """
+    def has_permission(self, request, view):
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            (request.user.role == 'RIDER' or request.user.is_admin_user)
+        )

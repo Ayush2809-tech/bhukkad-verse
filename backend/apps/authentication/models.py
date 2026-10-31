@@ -34,6 +34,7 @@ class User(AbstractUser):
         CUSTOMER = 'CUSTOMER', 'Customer'
         VENDOR = 'VENDOR', 'Vendor / Shop Owner'
         ADMIN = 'ADMIN', 'Platform Administrator'
+        RIDER = 'RIDER', 'Delivery Fleet Partner'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField('email address', unique=True, db_index=True)
@@ -58,6 +59,10 @@ class User(AbstractUser):
     @property
     def is_customer(self) -> bool:
         return self.role == self.Role.CUSTOMER
+
+    @property
+    def is_rider(self) -> bool:
+        return self.role == self.Role.RIDER
 
     @property
     def is_admin_user(self) -> bool:
