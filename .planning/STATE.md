@@ -16,7 +16,8 @@
   - Phase 6: Single-Vendor Cart & 4-Way Fair Checkout Engine
   - Phase 7: Local Orchestrator & Full-Stack Hardening
   - Feature: Rider COD Virtual Float Limit, Double-Entry Cash Ledger & T+1 Vendor Settlements (`feat/rider-cod-cash-ledger`)
-- **Active Phase:** PR Review & Merge of `feat/rider-cod-cash-ledger` -> Transition to Phase 8 (OpenAPI Type Generation) & Phase 9 (Expo SDK 52 Cross-Platform Mobile App).
+  - Phase 8 / 9: React Native / Expo Mobile App Suite (`feat/mobile-app-expo-sdk52`)
+- **Active Phase:** Verification and PR Review for Phase 8/9 Mobile Application Suite (Customer, Vendor, Rider).
 
 ---
 

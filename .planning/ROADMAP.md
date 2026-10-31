@@ -20,8 +20,8 @@ gantt
     Phase 6: Single-Vendor Cart & 4-Way Checkout   :done, p6, 2026-10, 2026-10
     Phase 7: Local Orchestrator & Production Audit :done, p7, 2026-10, 2026-10
     section Multi-Platform Scaling
-    Phase 8: OpenAPI Type Generation & SDKs        :active, p8, 2026-11, 2026-12
-    Phase 9: Cross-Platform Mobile App (Expo SDK 52):p9, 2026-12, 2027-01
+    Phase 8: OpenAPI Type Generation & SDKs        :done, p8, 2026-11, 2026-12
+    Phase 9: Cross-Platform Mobile App (Expo SDK 52):active, p9, 2026-12, 2027-01
     Phase 10: Real-Time Telemetry & Rider WebSockets:p10, 2027-01, 2027-02
 ```
 
