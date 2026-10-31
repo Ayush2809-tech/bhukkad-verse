@@ -4045,7 +4045,7 @@ export default function AdminPortalPage() {
                   <div className="text-2xl font-black text-amber-900">
                     ₹{codLedger?.summary?.total_cash_in_market?.toFixed(2) || "0.00"}
                   </div>
-                  <p className="text-[10px] text-amber-700 font-medium">Physical cash in riders' hands</p>
+                  <p className="text-[10px] text-amber-700 font-medium">Physical cash in riders&apos; hands</p>
                 </div>
 
                 <div className={`p-5 rounded-2xl border space-y-2 ${
