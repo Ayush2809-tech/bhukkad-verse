@@ -12,7 +12,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Store,
 } from "lucide-react";
 
@@ -75,10 +74,28 @@ export const ContinuousDishesSlider: React.FC = () => {
   const [dishes, setDishes] = useState<DishItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [addedDishId, setAddedDishId] = useState<string | null>(null);
 
   const sliderRef = useRef<HTMLDivElement>(null);
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMouseDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftStartRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+
   const { addItem } = useCart();
+
+  // Temporarily pauses auto-scroll ticker during manual interactions (clicks/drags)
+  const temporarilyPause = useCallback((durationMs = 4000) => {
+    setIsPaused(true);
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+    }
+    pauseTimeoutRef.current = setTimeout(() => {
+      setIsPaused(false);
+    }, durationMs);
+  }, []);
 
   const fetchDishes = useCallback(async (isInitial = false) => {
     try {
@@ -118,44 +135,110 @@ export const ContinuousDishesSlider: React.FC = () => {
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current);
+      }
     };
   }, [fetchDishes]);
 
-  // Continuous Infinite Spinning Marquee Mechanism
+  // Center the initial scroll position to the middle clone set for seamless 360 wrap
   useEffect(() => {
-    if (isPaused || dishes.length === 0) return;
+    if (dishes.length > 0 && sliderRef.current) {
+      const container = sliderRef.current;
+      const oneThird = container.scrollWidth / 3;
+      if (container.scrollLeft === 0 && oneThird > 0) {
+        container.scrollLeft = oneThird;
+      }
+    }
+  }, [dishes.length]);
+
+  // Continuous Infinite Spinning Marquee Mechanism (Seamless 3-set Virtual Buffer)
+  useEffect(() => {
+    if (isPaused || dishes.length === 0 || isDragging) return;
 
     const interval = setInterval(() => {
       const container = sliderRef.current;
       if (container) {
-        container.scrollLeft += 1.5;
-        const halfWidth = container.scrollWidth / 2;
-        if (container.scrollLeft >= halfWidth) {
-          container.scrollLeft -= halfWidth;
+        container.scrollLeft += 1.2;
+        const oneThird = container.scrollWidth / 3;
+        if (container.scrollLeft >= oneThird * 2) {
+          container.scrollLeft -= oneThird;
+        } else if (container.scrollLeft <= 5) {
+          container.scrollLeft += oneThird;
         }
       }
     }, 25);
 
     return () => clearInterval(interval);
-  }, [isPaused, dishes]);
+  }, [isPaused, dishes.length, isDragging]);
 
+  // Manual Smooth Chevron Navigation with Automatic Pause Protection
   const handleManualScroll = (direction: "left" | "right") => {
+    temporarilyPause(4500); // Suspend 25ms ticker so smooth animation executes without jitter
     const container = sliderRef.current;
     if (container) {
-      const halfWidth = container.scrollWidth / 2;
-      if (direction === "left" && container.scrollLeft <= 50) {
-        container.scrollLeft += halfWidth;
-      } else if (direction === "right" && container.scrollLeft >= halfWidth - 50) {
-        container.scrollLeft -= halfWidth;
+      const oneThird = container.scrollWidth / 3;
+      if (direction === "left" && container.scrollLeft <= 100) {
+        container.scrollLeft += oneThird;
+      } else if (direction === "right" && container.scrollLeft >= oneThird * 2 - 100) {
+        container.scrollLeft -= oneThird;
       }
-      const scrollAmount = direction === "left" ? -320 : 320;
+      const scrollAmount = direction === "left" ? -330 : 330;
       container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  // Desktop Mouse Drag-to-Scroll Handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const container = sliderRef.current;
+    if (!container) return;
+    isMouseDownRef.current = true;
+    hasDraggedRef.current = false;
+    startXRef.current = e.pageX - container.offsetLeft;
+    scrollLeftStartRef.current = container.scrollLeft;
+    temporarilyPause(6000);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDownRef.current) return;
+    const container = sliderRef.current;
+    if (!container) return;
+    e.preventDefault();
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - startXRef.current) * 1.4;
+    if (Math.abs(walk) > 6) {
+      hasDraggedRef.current = true;
+      setIsDragging(true);
+    }
+    container.scrollLeft = scrollLeftStartRef.current - walk;
+
+    // Boundary check during drag
+    const oneThird = container.scrollWidth / 3;
+    if (container.scrollLeft >= oneThird * 2) {
+      container.scrollLeft -= oneThird;
+      scrollLeftStartRef.current -= oneThird;
+    } else if (container.scrollLeft <= 5) {
+      container.scrollLeft += oneThird;
+      scrollLeftStartRef.current += oneThird;
+    }
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (isMouseDownRef.current) {
+      isMouseDownRef.current = false;
+      setIsDragging(false);
+      setTimeout(() => {
+        hasDraggedRef.current = false;
+      }, 80);
     }
   };
 
   const handleAddToCart = (e: React.MouseEvent, dish: DishItem) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Prevent accidental clicks if user was dragging
+    if (hasDraggedRef.current) return;
 
     const validDietary = dish.dietary_type === "NON_VEG" ? "NON_VEG" : "VEG";
     const resolvedImg = dish.image ? getMediaUrl(dish.image) : dish.image_url;
@@ -197,8 +280,8 @@ export const ContinuousDishesSlider: React.FC = () => {
 
   if (dishes.length === 0) return null;
 
-  // Quadruple items to ensure wide continuous spinning track
-  const displayDishes = [...dishes, ...dishes, ...dishes, ...dishes];
+  // Triple clone items for true circular seamless buffer
+  const displayDishes = [...dishes, ...dishes, ...dishes];
 
   return (
     <section className="py-12 bg-linear-to-b from-[#FDFBF7] via-[#F7F3EA]/60 to-[#FDFBF7] border-y border-brand-border/80 relative overflow-hidden select-none">
@@ -223,7 +306,7 @@ export const ContinuousDishesSlider: React.FC = () => {
             <button
               type="button"
               onClick={() => handleManualScroll("left")}
-              className="p-2.5 rounded-full bg-white hover:bg-brand-surface border border-brand-border shadow-xs hover:border-brand-orange text-brand-charcoal cursor-pointer transition-all"
+              className="p-2.5 rounded-full bg-white hover:bg-brand-surface border border-brand-border shadow-xs hover:border-brand-orange text-brand-charcoal cursor-pointer transition-all hover:scale-105 active:scale-95"
               title="Scroll Left"
               aria-label="Scroll dishes left"
             >
@@ -232,7 +315,7 @@ export const ContinuousDishesSlider: React.FC = () => {
             <button
               type="button"
               onClick={() => handleManualScroll("right")}
-              className="p-2.5 rounded-full bg-white hover:bg-brand-surface border border-brand-border shadow-xs hover:border-brand-orange text-brand-charcoal cursor-pointer transition-all"
+              className="p-2.5 rounded-full bg-white hover:bg-brand-surface border border-brand-border shadow-xs hover:border-brand-orange text-brand-charcoal cursor-pointer transition-all hover:scale-105 active:scale-95"
               title="Scroll Right"
               aria-label="Scroll dishes right"
             >
@@ -241,15 +324,26 @@ export const ContinuousDishesSlider: React.FC = () => {
           </div>
         </div>
 
-        {/* Endless Marquee Track */}
+        {/* Endless Marquee Track with Drag-to-Scroll & Touch Momentum */}
         <div
           ref={sliderRef}
           onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-          className="flex gap-5 overflow-x-hidden py-3 no-scrollbar cursor-grab active:cursor-grabbing"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          onMouseLeave={() => {
+            handleMouseUpOrLeave();
+            setIsPaused(false);
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onTouchStart={() => temporarilyPause(6000)}
+          onTouchEnd={() => temporarilyPause(2500)}
+          className={`flex gap-5 overflow-x-auto py-3 no-scrollbar select-none ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+          style={{
+            WebkitOverflowScrolling: "touch",
+            scrollBehavior: isDragging ? "auto" : undefined,
+          }}
         >
           {displayDishes.map((dish, idx) => {
             const hasDiscount =
@@ -267,12 +361,13 @@ export const ContinuousDishesSlider: React.FC = () => {
                 className="w-72 shrink-0 bg-white rounded-3xl border border-brand-border/90 shadow-xs hover:shadow-xl hover:border-brand-orange/40 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
               >
                 {/* Visual Dish Image Header */}
-                <div className="relative aspect-4/3 w-full bg-[#F5F2EB] overflow-hidden">
+                <div className="relative aspect-4/3 w-full bg-[#F5F2EB] overflow-hidden pointer-events-none">
                   <img
                     src={dishImage}
                     alt={dish.name}
                     className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     loading="lazy"
+                    draggable={false}
                   />
 
                   {/* Dietary Symbol Badge */}
@@ -345,7 +440,7 @@ export const ContinuousDishesSlider: React.FC = () => {
                     <button
                       type="button"
                       onClick={(e) => handleAddToCart(e, dish)}
-                      className={`inline-flex items-center gap-1 px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer shadow-xs ${
+                      className={`inline-flex items-center gap-1 px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95 ${
                         isAdded
                           ? "bg-emerald-600 text-white scale-95"
                           : "bg-brand-charcoal hover:bg-brand-orange text-white hover:shadow-md"

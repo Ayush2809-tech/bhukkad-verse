@@ -1,0 +1,12 @@
+# PR-Agent Configuration for Bhukkad-Verse
+[config]
+model = "gemini/gemini-1.5-flash"
+fallback_models = ["gemini/gemini-1.5-flash"]
+custom_model_max_tokens = 32000
+
+[pr_reviewer]
+num_code_suggestions = 4
+inline_code_comments = true
+
+[pr_description]
+publish_labels = true
