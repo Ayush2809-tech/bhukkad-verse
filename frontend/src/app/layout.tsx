@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
@@ -8,6 +8,7 @@ import { LocationProvider } from "@/context/LocationContext";
 import { CartProvider } from "@/context/CartContext";
 import { LocationSelectorModal } from "@/components/location/LocationSelectorModal";
 import { TrendingFoodPopup } from "@/components/notifications/TrendingFoodPopup";
+import { InstallPwaPrompt } from "@/components/layout/InstallPwaPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,8 +20,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#FF5200",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "BhukkadVerse",
+  },
   title: {
     default: "BHUKKAD VERSE — Your Cravings. Your Universe.",
     template: "%s | BHUKKAD VERSE",
@@ -150,6 +164,7 @@ export default function RootLayout({
               <Navbar />
               <LocationSelectorModal />
               <TrendingFoodPopup />
+              <InstallPwaPrompt />
               <main className="flex-1">{children}</main>
               <Footer />
             </CartProvider>
