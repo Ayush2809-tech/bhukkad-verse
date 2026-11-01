@@ -637,3 +637,4 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 });
+

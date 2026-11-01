@@ -25,3 +25,4 @@ export const CustomerNavigator: React.FC = () => {
     </Stack.Navigator>
   );
 };
+

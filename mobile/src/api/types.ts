@@ -119,3 +119,4 @@ export interface RiderWalletSummary {
   today_earnings: number;
   total_wages_earned: number;
 }
+

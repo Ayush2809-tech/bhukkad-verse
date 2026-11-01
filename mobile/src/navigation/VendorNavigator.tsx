@@ -55,3 +55,4 @@ export const VendorNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
+

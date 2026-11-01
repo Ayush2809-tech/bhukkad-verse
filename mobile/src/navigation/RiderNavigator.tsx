@@ -55,3 +55,4 @@ export const RiderNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
+

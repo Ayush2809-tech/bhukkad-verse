@@ -32,3 +32,4 @@ export const colors = {
   
   cardShadow: 'rgba(0, 0, 0, 0.4)',
 };
+
