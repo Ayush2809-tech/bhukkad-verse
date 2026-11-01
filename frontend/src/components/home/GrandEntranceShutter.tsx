@@ -36,14 +36,42 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
   const [settings, setSettings] = useState<PlatformSettingsData>(DEFAULT_SETTINGS);
   const [activeVideoSrc, setActiveVideoSrc] = useState<string>("/brand/curtain_loop.mp4");
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0); // 0% to 100% linear scroll progression
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const accumulatedDelta = useRef(0);
-  const threshold = 380; // Smooth, responsive scroll distance to lift curtain completely
+  const threshold = 380;
+
+  // Session-Aware initialization: Do NOT force curtain restart if user has already entered
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const alreadyDismissed = sessionStorage.getItem("bhukkad_curtain_dismissed");
+      if (alreadyDismissed === "true") {
+        setIsOpen(true);
+        setScrollProgress(100);
+        return;
+      }
+
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
+  const markCurtainOpened = () => {
+    setIsOpen(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("bhukkad_curtain_dismissed", "true");
+    }
+    if (onShutterLifted) {
+      onShutterLifted();
+    }
+  };
 
   // Instant Autoplay on initial component mount
   useEffect(() => {
+    if (isOpen) return;
     const vid = videoRef.current;
     if (!vid) return;
 
@@ -55,9 +83,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
       if (vid.paused) {
         const p = vid.play();
         if (p !== undefined) {
-          p.catch(() => {
-            // Silently wait for first gesture if browser is very strict
-          });
+          p.catch(() => {});
         }
       }
     };
@@ -73,7 +99,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
       vid.removeEventListener("canplay", attemptPlay);
       vid.removeEventListener("canplaythrough", attemptPlay);
     };
-  }, []);
+  }, [isOpen]);
 
   // Fetch dynamic CMS curtain settings from Django backend
   useEffect(() => {
@@ -83,7 +109,6 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
         if (res.ok) {
           const data = await res.json();
           let effectiveVid = data.effective_curtain_video_url || data.curtain_video_url;
-          // Use instant local streaming video if using platform default video or mixkit
           if (!effectiveVid || effectiveVid.includes("mixkit.co") || effectiveVid.includes("bhukkad_2.mp4")) {
             effectiveVid = "/brand/curtain_loop.mp4";
           }
@@ -103,7 +128,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
           }
 
           if (data.curtain_enabled === false) {
-            setIsOpen(true);
+            markCurtainOpened();
           }
         }
       } catch {
@@ -112,55 +137,6 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
     };
 
     fetchSettings();
-  }, []);
-
-  // Autoplay video explicitly whenever activeVideoSrc changes
-  useEffect(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-
-    vid.muted = true;
-    vid.defaultMuted = true;
-    vid.playsInline = true;
-
-    const p = vid.play();
-    if (p !== undefined) {
-      p.catch(() => {});
-    }
-  }, [activeVideoSrc]);
-
-  // Guaranteed fallback: Any user interaction (pointer, touch, wheel, mousemove) instantly starts video
-  useEffect(() => {
-    const handleUserInteraction = () => {
-      if (videoRef.current && videoRef.current.paused) {
-        videoRef.current.muted = true;
-        videoRef.current.play().catch(() => {});
-      }
-    };
-
-    window.addEventListener("pointerdown", handleUserInteraction, { passive: true, once: true });
-    window.addEventListener("touchstart", handleUserInteraction, { passive: true, once: true });
-    window.addEventListener("wheel", handleUserInteraction, { passive: true, once: true });
-    window.addEventListener("mousemove", handleUserInteraction, { passive: true, once: true });
-    window.addEventListener("scroll", handleUserInteraction, { passive: true, once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", handleUserInteraction);
-      window.removeEventListener("touchstart", handleUserInteraction);
-      window.removeEventListener("wheel", handleUserInteraction);
-      window.removeEventListener("mousemove", handleUserInteraction);
-      window.removeEventListener("scroll", handleUserInteraction);
-    };
-  }, []);
-
-  // Ensure on every refresh that the browser doesn't skip the curtain
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if ("scrollRestoration" in window.history) {
-        window.history.scrollRestoration = "manual";
-      }
-      window.scrollTo(0, 0);
-    }
   }, []);
 
   // Monitor physical wheel & touch gestures for progressive, smooth curtain roll-up
@@ -172,19 +148,16 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
     const handleWheel = (e: WheelEvent) => {
       if (isOpen) return;
 
-      // Accumulate wheel movement (scroll down lifts curtain smoothly)
       accumulatedDelta.current += e.deltaY;
       if (accumulatedDelta.current < 0) accumulatedDelta.current = 0;
 
       const progress = Math.min(100, Math.max(0, (accumulatedDelta.current / threshold) * 100));
       setScrollProgress(progress);
 
-      // Lock underlying page scroll until curtain has lifted all the way to 100%
       if (progress < 100) {
         if (e.cancelable) e.preventDefault();
       } else {
-        setIsOpen(true);
-        if (onShutterLifted) onShutterLifted();
+        markCurtainOpened();
       }
     };
 
@@ -196,7 +169,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
     const handleTouchMove = (e: TouchEvent) => {
       if (isOpen) return;
       const currentY = e.touches[0].clientY;
-      const deltaY = touchStartY - currentY; // positive when swiping upwards
+      const deltaY = touchStartY - currentY;
       touchStartY = currentY;
 
       accumulatedDelta.current += deltaY * 1.5;
@@ -208,8 +181,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
       if (progress < 100) {
         if (e.cancelable) e.preventDefault();
       } else {
-        setIsOpen(true);
-        if (onShutterLifted) onShutterLifted();
+        markCurtainOpened();
       }
     };
 
@@ -222,7 +194,7 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
     };
-  }, [isOpen, onShutterLifted, threshold]);
+  }, [isOpen, threshold]);
 
   // Monitor window scroll for real-world Back to Top floating button
   useEffect(() => {
@@ -238,17 +210,13 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
     return () => window.removeEventListener("scroll", handleWindowScroll);
   }, []);
 
-  // Smooth cinematic curtain lift triggered by buttons
   const liftCurtainSmoothly = () => {
     setIsAnimating(true);
     setScrollProgress(100);
     setTimeout(() => {
-      setIsOpen(true);
+      markCurtainOpened();
       setIsAnimating(false);
-      if (onShutterLifted) {
-        onShutterLifted();
-      }
-    }, 950);
+    }, 850);
   };
 
   const scrollToTop = () => {
@@ -274,123 +242,118 @@ export const GrandEntranceShutter: React.FC<GrandEntranceShutterProps> = ({
         </div>
       )}
 
-      {/* Theatrical Curtain / Velvet Food Shutter */}
-      <div
-        className={`fixed inset-0 z-50 overflow-hidden flex flex-col justify-between select-none shadow-2xl ${
-          isOpen ? "pointer-events-none" : "pointer-events-auto"
-        }`}
-        style={{
-          transform: `translateY(-${isOpen ? 100 : scrollProgress}%)`,
-          transition: isAnimating
-            ? "transform 0.95s cubic-bezier(0.22, 1, 0.36, 1)"
-            : "transform 0.16s cubic-bezier(0.16, 1, 0.3, 1)",
-          background: "radial-gradient(ellipse at 50% 30%, #20110A 0%, #110804 55%, #080302 100%)",
-        }}
-      >
-        {/* Dynamic Looping Cinematic Background Video */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <video
-            ref={videoRef}
-            src={activeVideoSrc}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            onError={() => {
-              if (activeVideoSrc !== "/brand/curtain_loop.mp4") {
-                setActiveVideoSrc("/brand/curtain_loop.mp4");
-              }
-            }}
-            className="absolute inset-0 w-full h-full object-cover opacity-85 filter brightness-95 contrast-105 scale-105"
-          />
-
-          {/* Cinematic subtle vignette overlay for rich colors and sharp text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/70 pointer-events-none" />
-          <div className="absolute inset-0 bg-radial from-transparent via-black/25 to-black/65 pointer-events-none" />
-        </div>
-
-        {/* Top Architectural Header */}
-        <div className="relative z-10 max-w-7xl mx-auto w-full px-6 pt-6 sm:pt-8 flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-black text-brand-amber backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-brand-orange animate-ping" />
-            <span>{settings.curtain_badge}</span>
+      {/* Theatrical Curtain / Velvet Food Shutter (Unmounted when open to save 100% resources) */}
+      {!isOpen && (
+        <div
+          className="fixed inset-0 z-50 overflow-hidden flex flex-col justify-between select-none shadow-2xl pointer-events-auto"
+          style={{
+            transform: `translateY(-${scrollProgress}%)`,
+            transition: isAnimating
+              ? "transform 0.85s cubic-bezier(0.22, 1, 0.36, 1)"
+              : "transform 0.16s cubic-bezier(0.16, 1, 0.3, 1)",
+            background: "radial-gradient(ellipse at 50% 30%, #20110A 0%, #110804 55%, #080302 100%)",
+          }}
+        >
+          {/* Dynamic Looping Cinematic Background Video */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <video
+              ref={videoRef}
+              src={activeVideoSrc}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              onError={() => {
+                if (activeVideoSrc !== "/brand/curtain_loop.mp4") {
+                  setActiveVideoSrc("/brand/curtain_loop.mp4");
+                }
+              }}
+              className="absolute inset-0 w-full h-full object-cover opacity-85 filter brightness-95 contrast-105 scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/70 pointer-events-none" />
+            <div className="absolute inset-0 bg-radial from-transparent via-black/25 to-black/65 pointer-events-none" />
           </div>
 
-          <button
-            type="button"
-            onClick={liftCurtainSmoothly}
-            className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-colors cursor-pointer backdrop-blur-md"
-          >
-            Explore Kitchens ✕
-          </button>
-        </div>
+          {/* Top Architectural Header */}
+          <div className="relative z-10 max-w-7xl mx-auto w-full px-6 pt-6 sm:pt-8 flex items-center justify-between">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-black text-brand-amber backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-brand-orange animate-ping" />
+              <span>{settings.curtain_badge}</span>
+            </div>
 
-        {/* Center Stage: Luxury Culinary Brand Crest & Dynamic Admin Quotes */}
-        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center space-y-6">
-          {/* Official 3D Master Brand Emblem */}
-          <div className="relative inline-block mx-auto">
-            <div className="absolute -inset-6 bg-gradient-to-tr from-brand-amber via-brand-orange to-brand-tomato rounded-full blur-3xl opacity-60 animate-pulse" />
-            <div className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-3xl p-1.5 bg-gradient-to-tr from-brand-amber via-brand-orange to-brand-tomato shadow-2xl border border-white/30 overflow-hidden backdrop-blur-md">
-              <div className="w-full h-full bg-[#FCF1E0] rounded-[22px] flex items-center justify-center p-2 relative shadow-inner">
-                <img
-                  src={resolvedLogoUrl}
-                  alt="BHUKKAD VERSE — Master Crest"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/brand/logo-primary.png";
-                  }}
-                  className="w-full h-full object-contain p-1"
+            <button
+              type="button"
+              onClick={liftCurtainSmoothly}
+              className="px-4 py-2 rounded-full bg-white/15 hover:bg-brand-orange hover:border-brand-orange border border-white/25 text-xs font-black text-white transition-all cursor-pointer backdrop-blur-md shadow-lg"
+            >
+              Skip to Storefront ✕
+            </button>
+          </div>
+
+          {/* Center Stage: Luxury Culinary Brand Crest & Dynamic Admin Quotes */}
+          <div className="relative z-10 max-w-3xl mx-auto px-6 text-center space-y-6">
+            <div className="relative inline-block mx-auto">
+              <div className="absolute -inset-6 bg-gradient-to-tr from-brand-amber via-brand-orange to-brand-tomato rounded-full blur-3xl opacity-60 animate-pulse" />
+              <div className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-3xl p-1.5 bg-gradient-to-tr from-brand-amber via-brand-orange to-brand-tomato shadow-2xl border border-white/30 overflow-hidden backdrop-blur-md">
+                <div className="w-full h-full bg-[#FCF1E0] rounded-[22px] flex items-center justify-center p-2 relative shadow-inner">
+                  <img
+                    src={resolvedLogoUrl}
+                    alt="BHUKKAD VERSE — Master Crest"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/brand/logo-primary.png";
+                    }}
+                    className="w-full h-full object-contain p-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tight leading-[1.05]">
+                {settings.curtain_headline.split(" ")[0]}{" "}
+                <span className="bg-gradient-to-r from-brand-amber via-brand-orange to-brand-tomato bg-clip-text text-transparent">
+                  {settings.curtain_headline.split(" ").slice(1).join(" ") || "VERSE"}
+                </span>
+              </h1>
+
+              <p className="text-sm sm:text-base font-black tracking-[0.25em] text-[#FDFBF7]/90 uppercase">
+                {settings.curtain_tagline}
+              </p>
+
+              <p className="text-xs sm:text-sm text-zinc-300 max-w-xl mx-auto leading-relaxed pt-1 font-medium italic">
+                &ldquo;{settings.curtain_quote}&rdquo;
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Curtain Pull Tab / Scroll Indicator */}
+          <div className="relative z-10 pb-8 sm:pb-12 text-center space-y-3">
+            <div className="inline-flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={liftCurtainSmoothly}
+                className="group flex flex-col items-center gap-1.5 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all cursor-pointer"
+              >
+                <span className="text-xs font-black tracking-widest text-brand-amber uppercase flex items-center gap-1.5">
+                  <span>Scroll Down or Click to Enter</span>
+                  <ChevronDown className="w-4 h-4 animate-bounce text-brand-orange" />
+                </span>
+                <span className="text-[10px] text-zinc-300 font-medium">
+                  Lift the curtain to unveil authentic culinary kitchens
+                </span>
+              </button>
+
+              <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-brand-orange transition-all duration-75"
+                  style={{ width: `${scrollProgress}%` }}
                 />
               </div>
             </div>
           </div>
-
-          {/* Dynamic Typography & Quote */}
-          <div className="space-y-3">
-            <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tight leading-[1.05]">
-              {settings.curtain_headline.split(" ")[0]}{" "}
-              <span className="bg-gradient-to-r from-brand-amber via-brand-orange to-brand-tomato bg-clip-text text-transparent">
-                {settings.curtain_headline.split(" ").slice(1).join(" ") || "VERSE"}
-              </span>
-            </h1>
-
-            <p className="text-sm sm:text-base font-black tracking-[0.25em] text-[#FDFBF7]/90 uppercase">
-              {settings.curtain_tagline}
-            </p>
-
-            <p className="text-xs sm:text-sm text-zinc-300 max-w-xl mx-auto leading-relaxed pt-1 font-medium italic">
-              &ldquo;{settings.curtain_quote}&rdquo;
-            </p>
-          </div>
         </div>
-
-        {/* Bottom Curtain Pull Tab / Scroll Indicator */}
-        <div className="relative z-10 pb-8 sm:pb-12 text-center space-y-3">
-          <div className="inline-flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={liftCurtainSmoothly}
-              className="group flex flex-col items-center gap-1.5 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all cursor-pointer"
-            >
-              <span className="text-xs font-black tracking-widest text-brand-amber uppercase flex items-center gap-1.5">
-                <span>Scroll Down or Click to Enter</span>
-                <ChevronDown className="w-4 h-4 animate-bounce text-brand-orange" />
-              </span>
-              <span className="text-[10px] text-zinc-300 font-medium">
-                Lift the curtain to unveil authentic culinary kitchens
-              </span>
-            </button>
-
-            {/* Micro visual progress bar of scroll lift */}
-            <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden mt-1">
-              <div
-                className="h-full bg-brand-orange transition-all duration-75"
-                style={{ width: `${scrollProgress}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </>
   );
 };

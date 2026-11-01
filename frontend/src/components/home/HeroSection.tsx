@@ -277,14 +277,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Right Column: Hero Visual Framing (Admin Configurable Mascot & Badges) */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-linear-to-tr from-brand-amber/20 via-white to-brand-tomato/15 group">
+            <div className="relative w-full max-w-md aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#FBF2E1] group">
               <img
                 src={resolvedMascotSrc}
                 alt="BHUKKAD VERSE Chef Mascot"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/brand/mascot-hero.jpg";
                 }}
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-700"
               />
 
               {/* Ambient Badge Top Left: Quality Food */}
@@ -301,8 +301,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <span>{heroCms.hero_mascot_badge_2}</span>
               </div>
 
-              {/* Sleek Short Floating Culinary Pill (Clean & Uncluttered) */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/85 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-xl flex items-center gap-2 text-white whitespace-nowrap">
+              {/* Sleek Floating Culinary Pill */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-neutral-900/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-xl flex items-center gap-2 text-white whitespace-nowrap">
                 <span className="text-xs">🔥</span>
                 <span className="text-xs font-black tracking-wide text-brand-amber">
                   {heroCms.hero_mascot_badge_bottom}

@@ -95,7 +95,9 @@ export const HomepageVideoSlider: React.FC = () => {
           const playPromise = vidEl.play();
           if (playPromise !== undefined) {
             playPromise.catch((err) => {
-              console.warn("Reel autoplay deferred by browser:", err);
+              if (err.name !== "AbortError") {
+                console.warn("Reel autoplay deferred by browser:", err);
+              }
             });
           }
         } else {
