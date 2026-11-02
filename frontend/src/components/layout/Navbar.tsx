@@ -25,6 +25,7 @@ import {
   UtensilsCrossed,
   ArrowRight,
   Loader2,
+  Smartphone,
 } from "lucide-react";
 
 const CRAVINGS_ROTATING_PLACEHOLDERS = [
@@ -440,6 +441,16 @@ export const Navbar: React.FC = () => {
                 <span>Dashboard</span>
               </Link>
             )}
+
+            {/* Get App Button */}
+            <Link
+              href="/download"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-white px-3 py-2 rounded-xl bg-brand-orange/10 hover:bg-brand-orange border border-brand-orange/30 transition-all shadow-2xs"
+              title="Download Android App and WebApp"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Get App</span>
+            </Link>
 
             {/* User Profile or Sign In */}
             {user ? (

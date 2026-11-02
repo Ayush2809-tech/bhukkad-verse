@@ -82,6 +82,11 @@ export const Footer: React.FC = () => {
                   Live Order Tracker
                 </Link>
               </li>
+              <li>
+                <Link href="/download" className="hover:text-brand-orange text-emerald-400 font-bold transition-colors flex items-center gap-1.5">
+                  <span>📱 Download App (Android & WebApp)</span>
+                </Link>
+              </li>
             </ul>
           </div>
 

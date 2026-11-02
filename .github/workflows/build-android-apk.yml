@@ -1,0 +1,64 @@
+name: Build Downloadable Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/build-android-apk.yml'
+
+jobs:
+  build-apk:
+    name: Build Standalone Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🤖 Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: 📦 Install Mobile Dependencies
+        run: |
+          cd mobile
+          npm install
+
+      - name: 🏗️ Run Expo Prebuild (Generate Native Android Project)
+        run: |
+          cd mobile
+          npx expo prebuild --platform android --clean
+
+      - name: ⚙️ Build Standalone Debug APK
+        run: |
+          cd mobile/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 🚀 Copy and Rename APK
+        run: |
+          mkdir -p build-output
+          cp mobile/android/app/build/outputs/apk/debug/app-debug.apk build-output/BhukkadVerse-v1.0.apk
+
+      - name: 📤 Upload Downloadable APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BhukkadVerse-Android-App
+          path: build-output/BhukkadVerse-v1.0.apk
+          retention-days: 30
+

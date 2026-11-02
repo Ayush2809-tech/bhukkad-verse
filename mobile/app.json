@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "BhukkadVerse",
+    "slug": "bhukkad-verse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "bhukkadverse",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F11"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bhukkadverse.app"
+    },
+    "android": {
+      "package": "com.bhukkadverse.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F0F11",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "contactEmail": "bhukkadverse.teams@gmail.com",
+      "platformFee": 5.00,
+      "freeDeliveryThreshold": 99.00,
+      "standardDeliveryFee": 25.00,
+      "riderDeliveryWage": 35.00,
+      "maxRiderCodCashFloat": 1500.00
+    }
+  }
+}
